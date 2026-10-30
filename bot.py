@@ -3,6 +3,8 @@ from rubpy.bot.models import Update
 import json
 import os
 import re
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # ---------- توکن از Environment Variable ----------
 TOKEN = os.environ.get("BOT_TOKEN", "")
@@ -32,24 +34,26 @@ def get_chat_key(chat_id):
 def get_target_from_command(text, update):
     """استخراج آیدی از ریپلای یا متن"""
     msg = update.new_message
-    
+    if not msg:
+        return None
+
     # ۱. ریپلای
-    if msg.reply_to_message_id:
+    if getattr(msg, 'reply_to_message_id', None):
         if hasattr(msg, 'reply_to_message') and msg.reply_to_message:
             replied = msg.reply_to_message
             if hasattr(replied, 'sender_id'):
                 return str(replied.sender_id)
-    
+
     # ۲. آیدی فرمت‌شده از متن (u0... یا c0...)
-    match = re.search(r'\b([uc]0[0-9a-zA-Z]{10,})\b', text)
+    match = re.search(r'\b([uc]0[0-9a-zA-Z]{10,})\b', text or "")
     if match:
         return match.group(1)
-    
+
     # ۳. عدد خالی
-    match = re.search(r'\b(\d{10,20})\b', text)
+    match = re.search(r'\b(\d{10,20})\b', text or "")
     if match:
         return match.group(1)
-    
+
     return None
 
 HELP_TEXT = """📚 **راهنمای ربات مدیریت گروه**
@@ -66,8 +70,28 @@ HELP_TEXT = """📚 **راهنمای ربات مدیریت گروه**
 🔹 **راهنما** — نمایش این راهنما
 """
 
+# ---------- HTTP Health Check برای UptimeRobot ----------
+class HealthCheck(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+    def log_message(self, *args):
+        pass
+
+def run_http():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthCheck)
+    print(f"🌐 HTTP health check on port {port}")
+    server.serve_forever()
+
+# ---------- هندلر گروه ----------
 @app.on_update(filters.text, filters.group)
 async def group_handler(client, update: Update):
+    # ✅ بررسی امن
+    if not update.new_message or not getattr(update.new_message, 'text', None):
+        return
+
     text = update.new_message.text.strip()
     chat_id = update.chat_id
     chat_key = get_chat_key(chat_id)
@@ -198,8 +222,13 @@ async def group_handler(client, update: Update):
         await update.reply(msg)
         return
 
+# ---------- هندلر خصوصی ----------
 @app.on_update(filters.text, filters.private)
 async def private_handler(client, update: Update):
+    # ✅ بررسی امن
+    if not update.new_message or not getattr(update.new_message, 'text', None):
+        return
+
     await update.reply(
         "👋 سلام!\n\n"
         "من یک ربات مدیریت گروه هستم.\n"
@@ -208,6 +237,8 @@ async def private_handler(client, update: Update):
     )
 
 if __name__ == "__main__":
+    # HTTP server در thread جدا برای UptimeRobot
+    threading.Thread(target=run_http, daemon=True).start()
     print("✅ ربات مدیریت گروه فعال شد!")
     print("📋 دستورات: حذف، بن، اخراج، اخطار، شناسه، قوانین، آمار، راهنما")
     app.run()
