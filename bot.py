@@ -16,6 +16,24 @@ app = BotClient(TOKEN)
 
 DATA_FILE = "bot_data.json"
 
+# ---------- لیست فحش (قابل گسترش) ----------
+BAD_WORDS = [
+    "کس", "کیر", "کص", "کون", "جنده", "حرومزاده", "حروم", "لاشی",
+    "گوه", "گوز", "پدرسگ", "مادرسگ", "سگ", "سگی", "خارکسه", "خارکصه",
+    "بی ناموس", "بی ناموس", "بی شرف", "بی غیرت", "دیوث", "کشکی",
+    "اشغال", "احمق", "خنگ", "کودن", "نادان", "ابله", "احمق",
+    "fuck", "shit", "bitch", "ass", "dick", "pussy", "cunt",
+]
+
+# الگوی لینک
+LINK_PATTERN = re.compile(
+    r'(https?://|www\.|t\.me/|telegram\.me/|rubika\.ir/|@[A-Za-z0-9_]{5,})',
+    re.IGNORECASE
+)
+
+# الگوی آیدی (u0... یا @username)
+ID_PATTERN = re.compile(r'(u0[0-9a-zA-Z]{10,}|@[A-Za-z0-9_]{5,})')
+
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -26,9 +44,10 @@ def load_data():
         "banned": {},
         "welcome": {},
         "locked": [],
-        "silenced": {},   # {chat_key: [user_id, ...]}
-        "owners": {},     # {chat_key: owner_id}
-        "msg_count": {}
+        "silenced": {},
+        "owners": {},
+        "msg_count": {},
+        "filters": {}  # {"chat_key": {"link": True/False, "id": True/False, "bad": True/False}}
     }
 
 def save_data(data):
@@ -39,6 +58,14 @@ data = load_data()
 
 def get_chat_key(chat_id):
     return str(chat_id)
+
+def get_filter_state(chat_key, key):
+    """وضعیت فیلتر: True = فعال (پاک کن)، False = غیرفعال (اجازه بده)"""
+    return data.setdefault("filters", {}).setdefault(chat_key, {}).get(key, False)
+
+def set_filter_state(chat_key, key, value):
+    data.setdefault("filters", {}).setdefault(chat_key, {})[key] = value
+    save_data(data)
 
 def get_target_from_command(text, update):
     msg = update.new_message
@@ -52,17 +79,12 @@ def get_target_from_command(text, update):
     match = re.search(r'\b([uc]0[0-9a-zA-Z]{10,})\b', text or "")
     if match:
         return match.group(1)
-    match = re.search(r'\b(\d{10,20})\b', text or "")
-    if match:
-        return match.group(1)
     return None
 
 def is_owner_or_admin(chat_key, user_id):
-    """چک میکنه کاربر مالک یا ادمین ذخیره‌شده هست یا نه"""
     owner = data.get("owners", {}).get(chat_key)
     if owner and str(owner) == str(user_id):
         return True
-    # اگه مالک هنوز ثبت نشده، اولین نفر رو مالک کن
     if not owner:
         data.setdefault("owners", {})[chat_key] = str(user_id)
         save_data(data)
@@ -72,6 +94,19 @@ def is_owner_or_admin(chat_key, user_id):
 def is_silenced(chat_key, user_id):
     silenced = data.get("silenced", {}).get(chat_key, [])
     return str(user_id) in [str(u) for u in silenced]
+
+def contains_bad_word(text):
+    text_lower = text.lower()
+    for word in BAD_WORDS:
+        if word.lower() in text_lower:
+            return True
+    return False
+
+def contains_link(text):
+    return bool(LINK_PATTERN.search(text))
+
+def contains_id(text):
+    return bool(ID_PATTERN.search(text))
 
 HELP_TEXT = """📚 **راهنمای ربات مدیریت گروه**
 
@@ -83,17 +118,15 @@ HELP_TEXT = """📚 **راهنمای ربات مدیریت گروه**
 🔹 **شناسه** — نمایش شناسه کاربر
 🔹 **قوانین** — نمایش قوانین
 🔹 **تنظیم قوانین <متن>** — تعیین قوانین
-🔹 **تنظیم پیام خوش آمدی <متن>** — تنظیم پیام خوش‌آمد
-🔹 **حذف پیام خوش آمدی** — حذف پیام خوش‌آمد
-🔹 **قفل کردن گروه** — بستن گروه
-🔹 **باز کردن گروه** — باز کردن گروه
-🔹 **سکوت** — با ریپلای، پیام‌های کاربر پاک شود
-🔹 **حذف سکوت** — با ریپلای، کاربر از سکوت درآید
-🔹 **پاک <تعداد>** — پاک کردن پیام‌های اخیر (۱ تا ۵۰۰)
-🔹 **زمان** — نمایش ساعت
-🔹 **پینگ** — تست سرعت
-🔹 **آمار** — آمار گروه
-🔹 **راهنما** — این پیام
+🔹 **تنظیم پیام خوش آمدی <متن>** — تنظیم خوش‌آمد
+🔹 **حذف پیام خوش آمدی** — حذف خوش‌آمد
+🔹 **قفل کردن گروه** / **باز کردن گروه**
+🔹 **سکوت** / **حذف سکوت** — با ریپلای یا آیدی
+🔹 **پاک <تعداد>** — ۱ تا ۵۰۰
+🔹 **لینک قفل** / **لینک باز** — حذف خودکار لینک
+🔹 **آیدی قفل** / **آیدی باز** — حذف خودکار آیدی
+🔹 **فحش قفل** / **فحش باز** — حذف خودکار فحش
+🔹 **زمان** / **پینگ** / **آمار** / **راهنما**
 """
 
 # ---------- HTTP Health Check ----------
@@ -109,7 +142,6 @@ def run_http():
     port = int(os.environ.get("PORT", 8080))
     HTTPServer(("0.0.0.0", port), HealthCheck).serve_forever()
 
-# ---------- شمارش پیام ----------
 def inc_msg_count(chat_key, sender):
     mc = data.setdefault("msg_count", {}).setdefault(chat_key, {})
     mc[str(sender)] = mc.get(str(sender), 0) + 1
@@ -127,26 +159,53 @@ async def group_handler(client, update: Update):
     sender = str(update.new_message.sender_id)
     msg_id = update.new_message.message_id
 
-    # شمارش پیام
     inc_msg_count(chat_key, sender)
 
-    # ---------- بررسی قفل گروه ----------
-    if chat_key in data.get("locked", []):
-        if not is_owner_or_admin(chat_key, sender):
-            try:
-                await client.delete_message(chat_id, msg_id)
-            except Exception:
-                pass
-            return
+    # ---------- فیلترهای خودکار ----------
+    should_delete = False
+    reason = ""
 
-    # ---------- بررسی سکوت کاربر ----------
-    if is_silenced(chat_key, sender):
-        if not is_owner_or_admin(chat_key, sender):
-            try:
-                await client.delete_message(chat_id, msg_id)
-            except Exception:
-                pass
-            return
+    if get_filter_state(chat_key, "link") and contains_link(text):
+        should_delete = True
+        reason = "لینک"
+
+    if get_filter_state(chat_key, "id") and contains_id(text):
+        should_delete = True
+        reason = "آیدی"
+
+    if get_filter_state(chat_key, "bad") and contains_bad_word(text):
+        should_delete = True
+        reason = "فحش"
+
+    # قفل گروه
+    if chat_key in data.get("locked", []) and not is_owner_or_admin(chat_key, sender):
+        should_delete = True
+        reason = "گروه قفل است"
+
+    # سکوت کاربر
+    if is_silenced(chat_key, sender) and not is_owner_or_admin(chat_key, sender):
+        should_delete = True
+        reason = "کاربر در سکوت است"
+
+    if should_delete:
+        try:
+            await client.delete_message(chat_id, msg_id)
+            # پیام هشدار (اختیاری)
+            if reason in ("لینک", "آیدی", "فحش"):
+                try:
+                    warn_msg = await update.reply(f"⚠️ پیام به دلیل «{reason}» حذف شد.")
+                    # پاک کردن پیام هشدار بعد از ۵ ثانیه (اختیاری)
+                    import asyncio
+                    await asyncio.sleep(5)
+                    try:
+                        await client.delete_message(chat_id, warn_msg.message_id)
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        return
 
     # ---------- راهنما ----------
     if text in ("راهنما", "help", "/help", "/start"):
@@ -164,7 +223,7 @@ async def group_handler(client, update: Update):
         await update.reply(f"🕐 {now}")
         return
 
-    # ---------- ثبت مالک (اولین نفر) ----------
+    # ---------- ثبت مالک ----------
     if text in ("ثبت مالک", "/setowner"):
         if chat_key not in data.get("owners", {}):
             data.setdefault("owners", {})[chat_key] = sender
@@ -181,7 +240,7 @@ async def group_handler(client, update: Update):
         if target:
             await update.reply(f"🆔 شناسه: `{target}`")
         else:
-            await update.reply(f"🆔 شناسه شما: `{sender}`\n(برای گرفتن شناسه دیگران، ریپلای کن و بنویس «شناسه»)")
+            await update.reply(f"🆔 شناسه شما: `{sender}`")
         return
 
     # ---------- حذف ----------
@@ -285,14 +344,13 @@ async def group_handler(client, update: Update):
     if text.startswith("تنظیم پیام خوش آمدی") or text.startswith("/setwelcome"):
         welcome_text = text.replace("تنظیم پیام خوش آمدی", "").replace("/setwelcome", "").strip()
         if not welcome_text:
-            await update.reply("❌ بنویس: تنظیم پیام خوش آمدی <متن>\nمثال: تنظیم پیام خوش آمدی سلام {name} عزیز خوش اومدی 🌹")
+            await update.reply("❌ بنویس: تنظیم پیام خوش آمدی <متن>\nمثال: تنظیم پیام خوش آمدی سلام {name} خوش اومدی 🌹")
             return
         data["welcome"][chat_key] = welcome_text
         save_data(data)
         await update.reply("✅ پیام خوش‌آمد تنظیم شد.")
         return
 
-    # ---------- حذف پیام خوش آمدی ----------
     if text in ("حذف پیام خوش آمدی", "/delwelcome"):
         if chat_key in data["welcome"]:
             del data["welcome"][chat_key]
@@ -310,7 +368,6 @@ async def group_handler(client, update: Update):
         await update.reply("🔒 گروه قفل شد. فقط مالک و ادمین‌ها می‌توانند پیام بدهند.")
         return
 
-    # ---------- باز کردن گروه ----------
     if text in ("باز کردن گروه", "/unlock"):
         if chat_key in data["locked"]:
             data["locked"].remove(chat_key)
@@ -318,11 +375,12 @@ async def group_handler(client, update: Update):
         await update.reply("🔓 گروه باز شد. همه می‌توانند پیام بدهند.")
         return
 
-    # ---------- سکوت کاربر ----------
+    # ---------- سکوت ----------
     if text in ("سکوت", "/silence"):
         target = get_target_from_command("", update)
         if not target:
-            await update.reply("❌ روی پیام کاربر ریپلای کن و بنویس «سکوت»")
+            # اگر ریپلای کار نکرد، آیدی دستی
+            await update.reply("❌ روی پیام کاربر ریپلای کن یا بنویس: سکوت u0...")
             return
         silenced = data.setdefault("silenced", {}).setdefault(chat_key, [])
         if str(target) not in [str(u) for u in silenced]:
@@ -335,7 +393,7 @@ async def group_handler(client, update: Update):
     if text in ("حذف سکوت", "/unsilence"):
         target = get_target_from_command("", update)
         if not target:
-            await update.reply("❌ روی پیام کاربر ریپلای کن و بنویس «حذف سکوت»")
+            await update.reply("❌ روی پیام کاربر ریپلای کن یا بنویس: حذف سکوت u0...")
             return
         silenced = data.setdefault("silenced", {}).setdefault(chat_key, [])
         if str(target) in [str(u) for u in silenced]:
@@ -344,6 +402,37 @@ async def group_handler(client, update: Update):
             await update.reply(f"🔊 کاربر {target} از سکوت درآمد.")
         else:
             await update.reply("ℹ️ این کاربر در سکوت نبود.")
+        return
+
+    # ---------- فیلترها: لینک / آیدی / فحش ----------
+    if text in ("لینک قفل", "/locklink"):
+        set_filter_state(chat_key, "link", True)
+        await update.reply("🔗 فیلتر لینک فعال شد. لینک‌ها خودکار حذف می‌شوند.")
+        return
+
+    if text in ("لینک باز", "/unlocklink"):
+        set_filter_state(chat_key, "link", False)
+        await update.reply("🔓 فیلتر لینک غیرفعال شد.")
+        return
+
+    if text in ("آیدی قفل", "/lockid"):
+        set_filter_state(chat_key, "id", True)
+        await update.reply("🆔 فیلتر آیدی فعال شد. آیدی‌ها خودکار حذف می‌شوند.")
+        return
+
+    if text in ("آیدی باز", "/unlockid"):
+        set_filter_state(chat_key, "id", False)
+        await update.reply("🔓 فیلتر آیدی غیرفعال شد.")
+        return
+
+    if text in ("فحش قفل", "/lockbad"):
+        set_filter_state(chat_key, "bad", True)
+        await update.reply("🤬 فیلتر فحش فعال شد. پیام‌های حاوی فحش خودکار حذف می‌شوند.")
+        return
+
+    if text in ("فحش باز", "/unlockbad"):
+        set_filter_state(chat_key, "bad", False)
+        await update.reply("🔓 فیلتر فحش غیرفعال شد.")
         return
 
     # ---------- پاک <تعداد> ----------
@@ -375,20 +464,29 @@ async def group_handler(client, update: Update):
         banned = data["banned"].get(chat_key, [])
         msg_count = data.get("msg_count", {}).get(chat_key, {})
         total_msgs = sum(msg_count.values())
-        top = sorted(msg_count.items(), key=lambda x: -x[1])[:3]
-        top_str = "\n".join([f"• {uid}: {cnt} پیام" for uid, cnt in top]) or "—"
+        # ۱۰ نفر اول
+        top10 = sorted(msg_count.items(), key=lambda x: -x[1])[:10]
+        top_lines = []
+        for i, (uid, cnt) in enumerate(top10, 1):
+            link = f"https://rubika.ir/{uid}"
+            top_lines.append(f"{i}. [{uid}]({link}) — {cnt} پیام")
+        top_str = "\n".join(top_lines) or "—"
         locked = "🔒 بسته" if chat_key in data.get("locked", []) else "🔓 باز"
         owner = data.get("owners", {}).get(chat_key, "ثبت نشده")
         silenced_count = len(data.get("silenced", {}).get(chat_key, []))
+        link_state = "🔗 فعال" if get_filter_state(chat_key, "link") else "🔗 غیرفعال"
+        id_state = "🆔 فعال" if get_filter_state(chat_key, "id") else "🆔 غیرفعال"
+        bad_state = "🤬 فعال" if get_filter_state(chat_key, "bad") else "🤬 غیرفعال"
         msg = (
             f"📊 **آمار گروه**\n\n"
             f"👤 مالک: `{owner}`\n"
-            f"وضعیت: {locked}\n"
+            f"وضعیت گروه: {locked}\n"
+            f"فیلترها: {link_state} | {id_state} | {bad_state}\n"
             f"🤐 سکوت‌شده‌ها: {silenced_count}\n"
             f"👥 بن‌شده‌ها: {len(banned)}\n"
             f"⚠️ اخطاردارها: {len(warns)}\n"
             f"💬 کل پیام‌ها: {total_msgs}\n\n"
-            f"🏆 **پرتکلم‌ترین‌ها:**\n{top_str}"
+            f"🏆 **۱۰ نفر پرتکلم:**\n{top_str}"
         )
         await update.reply(msg)
         return
@@ -408,5 +506,5 @@ async def private_handler(client, update: Update):
 if __name__ == "__main__":
     threading.Thread(target=run_http, daemon=True).start()
     print("✅ ربات مدیریت گروه فعال شد!")
-    print("📋 دستورات: حذف، بن، اخراج، اخطار، شناسه، قوانین، خوش‌آمد، قفل کردن گروه، باز کردن گروه، سکوت، حذف سکوت، پاک <تعداد>، آمار، راهنما")
+    print("📋 دستورات: حذف، بن، اخراج، اخطار، شناسه، قوانین، خوش‌آمد، قفل/باز کردن گروه، سکوت، فیلترها، پاک <تعداد>، آمار، راهنما")
     app.run()
