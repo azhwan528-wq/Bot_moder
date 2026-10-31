@@ -71,18 +71,34 @@ def inc_count(ck, uid):
 
 HELP = """📚 **راهنمای ربات**
 
-🔹 حذف / بن / اخراج / اخطار / حذف اخطار — با آیدی یا لینک
-🔹 شناسه — نمایش آیدی شما
-🔹 قوانین / تنظیم قوانین <متن>
-🔹 تنظیم پیام خوش آمدی <متن> / حذف پیام خوش آمدی
-🔹 قفل کردن گروه / باز کردن گروه
-🔹 سکوت u0... / حذف سکوت u0...
-🔹 پاک <تعداد> (۱ تا ۵۰۰)
-🔹 لینک قفل / لینک باز
-🔹 آیدی قفل / آیدی باز
-🔹 فحش قفل / فحش باز
-🔹 ادمین u0... / برکنار u0... / ادمین‌ها
-🔹 زمان / پینگ / آمار / راهنما
+🔹 /start یا راهنما
+🔹 /ping یا پینگ
+🔹 /time یا زمان
+🔹 /id یا شناسه
+🔹 /rules یا قوانین
+🔹 /stats یا آمار
+🔹 /admins یا ادمین‌ها
+🔹 /lock یا قفل کردن گروه
+🔹 /unlock یا باز کردن گروه
+🔹 /delete یا حذف (با ریپلای)
+🔹 /ban یا بن (با آیدی)
+🔹 /kick یا اخراج (با آیدی)
+🔹 /warn یا اخطار (با آیدی)
+🔹 /unwarn یا حذف اخطار (با آیدی)
+🔹 /silence یا سکوت (با آیدی)
+🔹 /unsilence یا حذف سکوت (با آیدی)
+🔹 /admin یا ادمین (با آیدی)
+🔹 /demote یا برکنار (با آیدی)
+🔹 /clear یا پاک (مثلاً پاک ۵)
+🔹 /locklink یا لینک قفل
+🔹 /unlocklink یا لینک باز
+🔹 /lockid یا آیدی قفل
+🔹 /unlockid یا آیدی باز
+🔹 /lockbad یا فحش قفل
+🔹 /unlockbad یا فحش باز
+🔹 /setrules یا تنظیم قوانین <متن>
+🔹 /setwelcome یا تنظیم پیام خوش آمدی <متن>
+🔹 /delwelcome یا حذف پیام خوش آمدی
 """
 
 class HC(BaseHTTPRequestHandler):
@@ -93,19 +109,21 @@ class HC(BaseHTTPRequestHandler):
 def run_http():
     HTTPServer(("0.0.0.0", int(os.environ.get("PORT", 8080))), HC).serve_forever()
 
-# ✅ هندلر اصلی برای همه پیام‌های متنی (گروه و PV)
+# ✅ همه دستورات از on_message استفاده می‌کنند و با/بدون اسلش کار می‌کنند
 @bot.on_message()
 async def handle_all(bot, event):
     try:
         if not event.text: return
-        text = event.text.strip()
+        raw = event.text.strip()
+        # ✅ حذف اسلش از ابتدای متن (اگر بود)
+        text = raw.lstrip("/")
         ck = str(event.chat_id)
         uid = str(event.author_id)
 
         inc_count(ck, uid)
 
         # فیلترها (فقط در گروه)
-        if event.chat_id and event.chat_id.startswith("c"):
+        if ck.startswith("c") or ck.startswith("g"):
             f = data.get("filters", {}).get(ck, {})
             if f.get("link") and LINK_PATTERN.search(text):
                 await bot.delete_message(event.chat_id, event.message_id); return
@@ -118,38 +136,38 @@ async def handle_all(bot, event):
             if is_silenced(ck, uid) and not is_owner_or_admin(ck, uid):
                 await bot.delete_message(event.chat_id, event.message_id); return
 
-        # ---------- دستورات (همه با on_message) ----------
-        if text in ("راهنما", "help", "/help", "/start"):
+        # ---------- دستورات (با/بدون اسلش) ----------
+        if text in ("start", "راهنما", "help"):
             await event.reply(HELP); return
-        if text in ("پینگ", "/ping", "ping"):
+        if text in ("ping", "پینگ"):
             await event.reply("🏓 پونگ!"); return
-        if text in ("زمان", "/time", "time"):
+        if text in ("time", "زمان"):
             await event.reply(f"🕐 {datetime.now():%Y/%m/%d - %H:%M:%S}"); return
-        if text in ("ثبت مالک", "/setowner"):
+        if text in ("setowner", "ثبت مالک"):
             if ck not in data.get("owners", {}):
                 data["owners"][ck] = uid; save_data(data); await event.reply(f"✅ مالک: `{uid}`")
             else: await event.reply(f"ℹ️ مالک: `{data['owners'][ck]}`")
             return
-        if text in ("شناسه", "/id", "id"):
-            t = get_target("", event); await event.reply(f"🆔 `{t or uid}`"); return
-        if text in ("حذف", "/delete", "delete"):
+        if text in ("id", "شناسه"):
+            t = get_target(text, event); await event.reply(f"🆔 `{t or uid}`"); return
+        if text in ("delete", "حذف"):
             if not event.reply_to_message_id: await event.reply("❌ ریپلای کن."); return
             try: await bot.delete_message(event.chat_id, event.reply_to_message_id); await event.reply("✅ حذف شد.")
             except Exception as e: await event.reply(f"❌ {e}")
             return
-        if text.startswith("بن") or text.startswith("/ban") or text.startswith("ban"):
+        if text.startswith("ban") or text.startswith("بن"):
             t = get_target(text, event)
             if not t: await event.reply("❌ آیدی/لینک بده."); return
             try: await bot.ban_member(chat_id=event.chat_id, sender_id=t); data["banned"].setdefault(ck, []).append(t); save_data(data); await event.reply(f"🔨 {t} بن شد.")
             except Exception as e: await event.reply(f"❌ {e}")
             return
-        if text.startswith("اخراج") or text.startswith("/kick") or text.startswith("kick"):
+        if text.startswith("kick") or text.startswith("اخراج"):
             t = get_target(text, event)
             if not t: await event.reply("❌ آیدی/لینک بده."); return
             try: await bot.ban_member(chat_id=event.chat_id, sender_id=t); await bot.unban_member(chat_id=event.chat_id, sender_id=t); await event.reply("👢 اخراج شد.")
             except Exception as e: await event.reply(f"❌ {e}")
             return
-        if text.startswith("اخطار") or text.startswith("/warn") or text.startswith("warn"):
+        if text.startswith("warn") or text.startswith("اخطار"):
             t = get_target(text, event)
             if not t: await event.reply("❌ آیدی/لینک بده."); return
             w = data["warns"].setdefault(ck, {}); w[t] = w.get(t, 0) + 1; save_data(data)
@@ -158,76 +176,76 @@ async def handle_all(bot, event):
                 except Exception as e: await event.reply(f"⚠️ {e}")
             else: await event.reply(f"⚠️ اخطار {w[t]}/۳ برای {t}.")
             return
-        if text.startswith("حذف اخطار") or text.startswith("/unwarn") or text.startswith("unwarn"):
+        if text.startswith("unwarn") or text.startswith("حذف اخطار"):
             t = get_target(text, event)
             if not t: await event.reply("❌ آیدی/لینک بده."); return
             w = data["warns"].get(ck, {})
             if t in w: del w[t]; save_data(data); await event.reply("✅ پاک شد.")
             else: await event.reply("ℹ️ نداشت.")
             return
-        if text in ("قوانین", "/rules", "rules"):
+        if text in ("rules", "قوانین"):
             r = data["rules"].get(ck); await event.reply(f"📜 {r}" if r else "📜 تنظیم نشده."); return
-        if text.startswith("تنظیم قوانین") or text.startswith("/setrules") or text.startswith("setrules"):
-            r = text.replace("تنظیم قوانین", "").replace("/setrules", "").replace("setrules", "").strip()
+        if text.startswith("setrules") or text.startswith("تنظیم قوانین"):
+            r = text.replace("setrules", "").replace("تنظیم قوانین", "").strip()
             if not r: await event.reply("❌ متن بده."); return
             data["rules"][ck] = r; save_data(data); await event.reply("✅ تنظیم شد."); return
-        if text.startswith("تنظیم پیام خوش آمدی") or text.startswith("/setwelcome") or text.startswith("setwelcome"):
-            w = text.replace("تنظیم پیام خوش آمدی", "").replace("/setwelcome", "").replace("setwelcome", "").strip()
+        if text.startswith("setwelcome") or text.startswith("تنظیم پیام خوش آمدی"):
+            w = text.replace("setwelcome", "").replace("تنظیم پیام خوش آمدی", "").strip()
             if not w: await event.reply("❌ متن بده."); return
             data["welcome"][ck] = w; save_data(data); await event.reply("✅ تنظیم شد."); return
-        if text in ("حذف پیام خوش آمدی", "/delwelcome", "delwelcome"):
+        if text in ("delwelcome", "حذف پیام خوش آمدی"):
             if ck in data["welcome"]: del data["welcome"][ck]; save_data(data); await event.reply("✅ حذف شد.")
             else: await event.reply("ℹ️ تنظیم نشده بود.")
             return
-        if text in ("قفل کردن گروه", "/lock", "lock"):
+        if text in ("lock", "قفل کردن گروه"):
             if ck not in data["locked"]: data["locked"].append(ck); save_data(data)
             await event.reply("🔒 قفل شد."); return
-        if text in ("باز کردن گروه", "/unlock", "unlock"):
+        if text in ("unlock", "باز کردن گروه"):
             if ck in data["locked"]: data["locked"].remove(ck); save_data(data)
             await event.reply("🔓 باز شد."); return
-        if text.startswith("سکوت") or text.startswith("/silence") or text.startswith("silence"):
+        if text.startswith("silence") or text.startswith("سکوت"):
             t = get_target(text, event)
             if not t: await event.reply("❌ بنویس: سکوت u0..."); return
             s = data.setdefault("silenced", {}).setdefault(ck, [])
             if t not in s: s.append(t); save_data(data)
             await event.reply(f"🤐 {t} سکوت شد."); return
-        if text.startswith("حذف سکوت") or text.startswith("/unsilence") or text.startswith("unsilence"):
+        if text.startswith("unsilence") or text.startswith("حذف سکوت"):
             t = get_target(text, event)
             if not t: await event.reply("❌ بنویس: حذف سکوت u0..."); return
             s = data.setdefault("silenced", {}).setdefault(ck, [])
             if t in s: s.remove(t); save_data(data); await event.reply(f"🔊 {t} آزاد شد.")
             else: await event.reply("ℹ️ سکوت نبود.")
             return
-        if text in ("لینک قفل", "/locklink", "locklink"):
+        if text in ("locklink", "لینک قفل"):
             data.setdefault("filters", {}).setdefault(ck, {})["link"] = True; save_data(data); await event.reply("🔗 فیلتر لینک فعال شد."); return
-        if text in ("لینک باز", "/unlocklink", "unlocklink"):
+        if text in ("unlocklink", "لینک باز"):
             data.setdefault("filters", {}).setdefault(ck, {})["link"] = False; save_data(data); await event.reply("🔓 فیلتر لینک غیرفعال شد."); return
-        if text in ("آیدی قفل", "/lockid", "lockid"):
+        if text in ("lockid", "آیدی قفل"):
             data.setdefault("filters", {}).setdefault(ck, {})["id"] = True; save_data(data); await event.reply("🆔 فیلتر آیدی فعال شد."); return
-        if text in ("آیدی باز", "/unlockid", "unlockid"):
+        if text in ("unlockid", "آیدی باز"):
             data.setdefault("filters", {}).setdefault(ck, {})["id"] = False; save_data(data); await event.reply("🔓 فیلتر آیدی غیرفعال شد."); return
-        if text in ("فحش قفل", "/lockbad", "lockbad"):
+        if text in ("lockbad", "فحش قفل"):
             data.setdefault("filters", {}).setdefault(ck, {})["bad"] = True; save_data(data); await event.reply("🤬 فیلتر فحش فعال شد."); return
-        if text in ("فحش باز", "/unlockbad", "unlockbad"):
+        if text in ("unlockbad", "فحش باز"):
             data.setdefault("filters", {}).setdefault(ck, {})["bad"] = False; save_data(data); await event.reply("🔓 فیلتر فحش غیرفعال شد."); return
-        if text.startswith("ادمین") and not text.startswith("ادمین‌ها") or text.startswith("/admin") or text.startswith("admin"):
+        if text.startswith("admin") and not text.startswith("admins") or text.startswith("ادمین") and not text.startswith("ادمین‌ها"):
             t = get_target(text, event)
             if not t: await event.reply("❌ ادمین u0..."); return
             a = data.setdefault("admins", {}).setdefault(ck, [])
             if t not in a: a.append(t); save_data(data)
             await event.reply(f"👑 {t} ادمین شد."); return
-        if text.startswith("برکنار") or text.startswith("/demote") or text.startswith("demote"):
+        if text.startswith("demote") or text.startswith("برکنار"):
             t = get_target(text, event)
             if not t: await event.reply("❌ برکنار u0..."); return
             a = data.setdefault("admins", {}).setdefault(ck, [])
             if t in a: a.remove(t); save_data(data); await event.reply(f"🚫 {t} برکنار شد.")
             else: await event.reply("ℹ️ ادمین نبود.")
             return
-        if text in ("ادمین‌ها", "/admins", "admins"):
+        if text in ("admins", "ادمین‌ها"):
             a = data.get("admins", {}).get(ck, []); o = data.get("owners", {}).get(ck, "—")
             await event.reply(f"👑 مالک: `{o}`\n\n**ادمین‌ها:**\n" + ("\n".join(f"• `{x}`" for x in a) if a else "—")); return
-        if text.startswith("پاک") or text.startswith("/clear") or text.startswith("clear"):
-            p = text.replace("پاک", "").replace("/clear", "").replace("clear", "").strip().split()
+        if text.startswith("clear") or text.startswith("پاک"):
+            p = text.replace("clear", "").replace("پاک", "").strip().split()
             if not p or not p[0].isdigit(): await event.reply("❌ پاک <۱-۵۰۰>"); return
             n = int(p[0])
             if not 1 <= n <= 500: await event.reply("❌ ۱ تا ۵۰۰."); return
@@ -238,7 +256,7 @@ async def handle_all(bot, event):
                 try: await bot.delete_message(event.chat_id, tid); d += 1
                 except: pass
             await event.reply(f"🧹 {d} پیام پاک شد."); return
-        if text in ("آمار", "/stats", "stats"):
+        if text in ("stats", "آمار"):
             w = data["warns"].get(ck, {}); b = data["banned"].get(ck, []); mc = data.get("msg_count", {}).get(ck, {})
             top = sorted(mc.items(), key=lambda x: -x[1])[:10]
             top_s = "\n".join(f"{i}. [{u}](https://rubika.ir/{u}) — {c} پیام" for i, (u, c) in enumerate(top, 1)) or "—"
