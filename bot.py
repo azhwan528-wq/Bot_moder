@@ -4,12 +4,12 @@ import re
 import threading
 import time
 import requests
+import random
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from rubibot import RubiBot
 
-# ---------- توکن ----------
 TOKEN = os.environ.get("BOT_TOKEN", "")
 if not TOKEN:
     print("❌ BOT_TOKEN تنظیم نشده!")
@@ -18,7 +18,7 @@ if not TOKEN:
 bot = RubiBot(TOKEN)
 DATA_FILE = "bot_data.json"
 
-# ---------- لیست فحش ----------
+# ==================== لیست فحش ====================
 BAD_WORDS = [
     "کس", "کیر", "کص", "کون", "جنده", "حرومزاده", "حروم", "لاشی",
     "گوه", "گوز", "پدرسگ", "مادرسگ", "سگ", "سگی", "خارکسه", "خارکصه",
@@ -30,6 +30,330 @@ BAD_WORDS = [
 LINK_PATTERN = re.compile(r'(https?://|www\.|t\.me/|rubika\.ir/|@[A-Za-z0-9_]{5,})', re.IGNORECASE)
 ID_PATTERN = re.compile(r'(u0[0-9a-zA-Z]{10,}|@[A-Za-z0-9_]{5,})')
 
+# ==================== لیست‌های سرگرمی ====================
+
+# ---------- 100 چالش ----------
+CHALLENGES = [
+    "بهترین خاطره‌ات از دوران مدرسه رو تعریف کن.",
+    "آخرین باری که از ته دل خندیدی کی بود؟",
+    "اگه می‌تونستی یه توانایی خاص داشته باشی، چی انتخاب می‌کردی؟",
+    "بزرگترین ترست چیه؟",
+    "آخرین آهنگی که گوش دادی چی بود؟",
+    "اگه یه روز نامرئی می‌شدی، چیکار می‌کردی؟",
+    "بدترین هدیه‌ای که تا حالا گرفتی چی بود؟",
+    "اولین چیزی که وقتی از خواب بیدار می‌شی بهش فکر می‌کنی چیه؟",
+    "اگه قرار بود یه کتاب بنویسی، اسمش رو چی می‌ذاشتی؟",
+    "آخرین فیلمی که دیدی و چقدر بهش نمره می‌دی؟",
+    "اگه یه سفر رایگان به هر جای دنیا داشتی، کجا می‌رفتی؟",
+    "بهترین دوستت رو چطور توصیف می‌کنی؟",
+    "چیزی که هیچ‌وقت نمی‌تونی ببخشی چیه؟",
+    "اگه یه روز پول بی‌نهایت داشتی، اولین کارت چی بود؟",
+    "بدترین درسی که تو مدرسه داشتی چی بود؟",
+    "آخرین باری که گریه کردی برای چی بود؟",
+    "اگه می‌تونستی با یه شخصیت تاریخی شام بخوری، کی رو انتخاب می‌کردی؟",
+    "یه چیزی که هیچ‌کس درباره‌ات نمی‌دونه چیه؟",
+    "بهترین نصیحتی که تا حالا گرفتی چیه؟",
+    "اگه یه سوپرپاور داشتی، ازش چطور استفاده می‌کردی؟",
+    "دوست داری کدوم حیوان باشی و چرا؟",
+    "آخرین باری که یه کار احمقانه کردی کی بود؟",
+    "اگه می‌تونستی یه قانون تو دنیا عوض کنی، چی رو عوض می‌کردی؟",
+    "بزرگترین آرزوی دوران کودکیت چی بود؟",
+    "چی باعث می‌شه بیشتر از همه عصبی بشی؟",
+    "اگه یه روز رو با کسی می‌تونستی عوض کنی، کی رو انتخاب می‌کردی؟",
+    "بهترین ویژگی خودت چیه؟",
+    "بدترین ویژگی خودت چیه؟",
+    "اگه مجبور بودی یه غذا رو تا آخر عمر بخوری، چی انتخاب می‌کردی؟",
+    "یه چیز که همیشه می‌خواستی یاد بگیری ولی وقت نکردی چیه؟",
+    "آخرین باری که از کسی ناامید شدی کی بود؟",
+    "اگه می‌تونستی به گذشته برگردی، چه کاری رو متفاوت انجام می‌دادی؟",
+    "دوست داری ۱۰ سال دیگه کجا باشی؟",
+    "چی بیشتر از همه تو رو خوشحال می‌کنه؟",
+    "یه عادت بد که داری و دوست داری ترکش کنی چیه؟",
+    "بهترین سفر زندگیت کجا بود؟",
+    "اگه یه روز کامل بدون اینترنت بودی، چیکار می‌کردی؟",
+    "دوست داری چه مهارتی رو در خودت تقویت کنی؟",
+    "آخرین کتابی که خوندی چی بود؟",
+    "اگه یه رستوران باز می‌کردی، اسمش رو چی می‌ذاشتی؟",
+    "بهترین هدیه‌ای که تا حالا گرفتی چی بود؟",
+    "چی تو رو بیشتر از همه می‌ترسونه؟",
+    "اگه می‌تونستی یه روز با یه شخصیت کارتونی زندگی کنی، کی رو انتخاب می‌کردی؟",
+    "یه چیزی که باعث افتخارت می‌شه چیه؟",
+    "چی تو رو بیشتر از همه ناراحت می‌کنه؟",
+    "دوست داری چه لقبی داشته باشی؟",
+    "آخرین باری که یه کار جدید رو امتحان کردی کی بود؟",
+    "بهترین دوستت چه ویژگی‌ای داره که تو دوستش داری؟",
+    "اگه می‌تونستی یه روز رو دوباره تجربه کنی، کدوم روز بود؟",
+    "چی تو رو بیشتر از همه می‌خندونه؟",
+    "بهترین تصمیمی که تا حالا گرفتی چیه؟",
+    "بدترین تصمیمی که تا حالا گرفتی چیه؟",
+    "دوست داری چه چیزی رو تو خودت تغییر بدی؟",
+    "آخرین باری که به کسی کمک کردی کی بود؟",
+    "چی بیشتر از همه تو رو آروم می‌کنه؟",
+    "اگه یه جزیره متروکه فرستاده می‌شدی، سه چیز رو با خودت می‌بردی؟",
+    "بهترین ویژگی دوستات چیه؟",
+    "چی تو رو بیشتر از همه هیجان‌زده می‌کنه؟",
+    "دوست داری چه چیز جدیدی رو تجربه کنی؟",
+    "آخرین باری که یه اتفاق غیرمنتظره برات افتاد کی بود؟",
+    "بهترین چیز درباره‌ی خانواده‌ات چیه؟",
+    "چی تو رو بیشتر از همه ناامید می‌کنه؟",
+    "دوست داری چه چیزی رو به بقیه یاد بدی؟",
+    "آخرین باری که یه تصمیم سخت گرفتی کی بود؟",
+    "بهترین چیز درباره‌ی این گروه چیه؟",
+    "چی تو رو بیشتر از همه به فکر فرو می‌بره؟",
+    "دوست داری چه چیزی رو تو دنیا تغییر بدی؟",
+    "آخرین باری که یه کار خارق‌العاده کردی کی بود؟",
+    "بهترین چیز درباره‌ی خودت چیه؟",
+    "چی تو رو بیشتر از همه شرمنده می‌کنه؟",
+    "دوست داری چه چیزی رو با دیگران به اشتراک بذاری؟",
+    "آخرین باری که یه چیز جدید یاد گرفتی کی بود؟",
+    "بهترین چیز درباره‌ی دوستات چیه؟",
+    "چی تو رو بیشتر از همه به چالش می‌کشه؟",
+    "دوست داری چه چیزی رو در آینده انجام بدی؟",
+    "آخرین باری که یه رویا دیدی و به یادش می‌مونی کی بود؟",
+    "بهترین چیز درباره‌ی زندگی چیه؟",
+    "چی تو رو بیشتر از همه به گریه می‌ندازه؟",
+    "دوست داری چه چیزی رو با کسی در میون بذاری؟",
+    "آخرین باری که یه کار غیرمنتظره انجام دادی کی بود؟",
+    "بهترین چیز درباره‌ی امروز چیه؟",
+    "چی تو رو بیشتر از همه به خنده می‌ندازه؟",
+    "دوست داری چه چیزی رو در خودت ببینی؟",
+    "آخرین باری که یه اتفاق خوب برات افتاد کی بود؟",
+    "بهترین چیز درباره‌ی فردا چیه؟",
+    "چی تو رو بیشتر از همه به فکر کردن وادار می‌کنه؟",
+    "دوست داری چه چیزی رو با دیگران تقسیم کنی؟",
+    "آخرین باری که یه کار درست انجام دادی کی بود؟",
+    "بهترین چیز درباره‌ی دیروز چیه؟",
+    "چی تو رو بیشتر از همه به خودت شک می‌ندازه؟",
+    "دوست داری چه چیزی رو در زندگی تجربه کنی؟",
+    "آخرین باری که یه کار اشتباه انجام دادی کی بود؟",
+    "بهترین چیز درباره‌ی این لحظه چیه؟",
+    "چی تو رو بیشتر از همه به خودت باور داری؟",
+    "دوست داری چه چیزی رو به دیگران هدیه بدی؟",
+    "آخرین باری که یه کار خلاقانه انجام دادی کی بود؟",
+    "بهترین چیز درباره‌ی تو چیه؟",
+    "چی تو رو بیشتر از همه به دیگران نزدیک می‌کنه؟",
+    "دوست داری چه چیزی رو در دنیا ببینی؟",
+]
+
+# ---------- 100 سوال جرئت یا حقیقت ----------
+TRUTH_OR_DARE = [
+    "بزرگترین ترس زندگی‌ات چیه؟",
+    "آخرین باری که گریه کردی کی بود و چرا؟",
+    "تا حالا حس کردی کسی واقعاً تو رو نمی‌فهمه؟",
+    "چیزی که همیشه باعث شده به خودت شک کنی چیه؟",
+    "عمیق‌ترین ترس زندگی‌ات چیه؟",
+    "به نظرت جذاب‌ترین شخص این جمع کیه؟",
+    "بزرگ‌ترین حسرت زندگی‌ات چیه؟",
+    "تا حالا تقلب یا کلاهبرداری کردی؟ داستانش رو تعریف کن.",
+    "بزرگ‌ترین دروغ زندگی‌ات چی بوده؟",
+    "اگه فقط یک روز از عمرت باقی مونده بود چیکار می‌کردی؟",
+    "چه نیروی خارق‌العاده‌ای دوست داشتی داشته باشی؟",
+    "عجیب‌ترین خوابی که دیدی چی بوده؟",
+    "بدترین هدیه‌ای که گرفتی چی بود؟",
+    "چه سوالی رو دوست نداری توی این بازی جواب بدی؟",
+    "یکی از فانتزی‌های عاشقانه‌ات رو بگو.",
+    "آخرین پیامی که به کسی دادی رو با صدای بلند بخون!",
+    "وسایل توی کیف یا جیبت رو نشون بده!",
+    "به اولین نفر توی لیست مخاطبینت زنگ بزن و آهنگ تولدت مبارک رو براش بخون!",
+    "ادای یه حیوان رو دربیار و بقیه حدس بزنن!",
+    "بچرخ و بعد سعی کن بلند شی و صاف راه بری!",
+    "تا حالا شده به جای مدرسه/دانشگاه بری یه جا دیگه؟",
+    "تا حالا تو امتحانا تقلب کردی؟",
+    "اگه یه چیزی می‌تونستی اختراع کنی اون چی بود؟",
+    "بزرگ‌ترین آرزوی شغلیت چیه؟",
+    "الگوت تو زندگی کیه و چرا؟",
+    "بزرگ‌ترین ترس دوران کودکیت چی بود؟",
+    "آخرین باری که از ته دل خندیدی کی بود؟",
+    "بهترین خاطره‌ات از دوران مدرسه چیه؟",
+    "بدترین خاطره‌ات از دوران مدرسه چیه؟",
+    "اگه می‌تونستی یه روز جای یه نفر باشی، کی رو انتخاب می‌کردی؟",
+    "چی تو رو بیشتر از همه عصبی می‌کنه؟",
+    "چی تو رو بیشتر از همه خوشحال می‌کنه؟",
+    "چی تو رو بیشتر از همه ناراحت می‌کنه؟",
+    "بهترین ویژگی خودت چیه؟",
+    "بدترین ویژگی خودت چیه؟",
+    "یه چیزی که هیچ‌کس درباره‌ات نمی‌دونه چیه؟",
+    "بهترین نصیحتی که تا حالا گرفتی چیه؟",
+    "بدترین نصیحتی که تا حالا گرفتی چیه؟",
+    "اگه می‌تونستی یه قانون تو دنیا عوض کنی، چی رو عوض می‌کردی؟",
+    "بزرگ‌ترین آرزوی دوران کودکیت چی بود؟",
+    "آخرین باری که یه کار احمقانه کردی کی بود؟",
+    "دوست داری کدوم حیوان باشی و چرا؟",
+    "اگه یه سوپرپاور داشتی، ازش چطور استفاده می‌کردی؟",
+    "بهترین سفر زندگیت کجا بود؟",
+    "بدترین سفر زندگیت کجا بود؟",
+    "آخرین کتابی که خوندی چی بود؟",
+    "آخرین فیلمی که دیدی چی بود؟",
+    "بهترین فیلمی که دیدی چی بود؟",
+    "بدترین فیلمی که دیدی چی بود؟",
+    "آخرین آهنگی که گوش دادی چی بود؟",
+    "بهترین آهنگی که گوش دادی چی بود؟",
+    "دوست داری چه مهارتی رو یاد بگیری؟",
+    "دوست داری چه زبانی رو یاد بگیری؟",
+    "دوست داری به کدوم کشور سفر کنی؟",
+    "دوست داری چه غذایی رو امتحان کنی؟",
+    "بدترین غذایی که خوردی چی بود؟",
+    "بهترین غذایی که خوردی چی بود؟",
+    "دوست داری چه نوشیدنی‌ای رو امتحان کنی؟",
+    "بدترین نوشیدنی‌ای که خوردی چی بود؟",
+    "بهترین نوشیدنی‌ای که خوردی چی بود؟",
+    "دوست داری چه ورزشی رو انجام بدی؟",
+    "دوست داری چه ساز موسیقی رو یاد بگیری؟",
+    "دوست داری چه هنری رو یاد بگیری؟",
+    "دوست داری چه شغلی رو امتحان کنی؟",
+    "دوست داری چه کسب‌وکاری راه بندازی؟",
+    "دوست داری چه اختراعی بکنی؟",
+    "دوست داری چه اکتشافی بکنی؟",
+    "دوست داری چه تحقیقی بکنی؟",
+    "دوست داری چه کتابی بنویسی؟",
+    "دوست داری چه فیلمی بسازی؟",
+    "دوست داری چه آهنگی بسازی؟",
+    "دوست داری چه بازی‌ای بسازی؟",
+    "دوست داری چه اپلیکیشنی بسازی؟",
+    "دوست داری چه وب‌سایتی بسازی؟",
+    "دوست داری چه رباتی بسازی؟",
+    "دوست داری چه کاری رو برای اولین بار انجام بدی؟",
+    "دوست داری چه کاری رو برای آخرین بار انجام بدی؟",
+    "دوست داری چه چیزی رو به بقیه یاد بدی؟",
+    "دوست داری چه چیزی رو از بقیه یاد بگیری؟",
+    "دوست داری چه چیزی رو با بقیه به اشتراک بذاری؟",
+    "دوست داری چه چیزی رو از بقیه پنهان کنی؟",
+    "دوست داری چه چیزی رو در خودت تغییر بدی؟",
+    "دوست داری چه چیزی رو در دیگران تغییر بدی؟",
+    "دوست داری چه چیزی رو در دنیا تغییر بدی؟",
+    "دوست داری چه چیزی رو در آینده ببینی؟",
+    "دوست داری چه چیزی رو در گذشته می‌دیدی؟",
+    "دوست داری چه چیزی رو در حال حاضر تجربه کنی؟",
+    "دوست داری چه چیزی رو در آینده تجربه کنی؟",
+    "دوست داری چه چیزی رو هرگز تجربه نکنی؟",
+    "دوست داری چه چیزی رو همیشه تجربه کنی؟",
+    "دوست داری چه چیزی رو یک بار تجربه کنی؟",
+    "دوست داری چه چیزی رو چند بار تجربه کنی؟",
+    "دوست داری چه چیزی رو هیچ‌وقت تجربه نکنی؟",
+    "دوست داری چه چیزی رو حتماً تجربه کنی؟",
+    "دوست داری چه چیزی رو شاید تجربه کنی؟",
+    "دوست داری چه چیزی رو احتمالاً تجربه کنی؟",
+    "دوست داری چه چیزی رو قطعاً تجربه کنی؟",
+]
+
+# ---------- 100 متن بیو ----------
+BIOS = [
+    "دنیا محل عبوره، ما هم رهگذریم.",
+    "هرچی که دارم از لطف توست.",
+    "زندگی زیباست، فقط باید درست ببینیش.",
+    "من همونیم که هستم، نه چیزی که می‌خوای باشم.",
+    "با لبخندت دنیا رو زیباتر کن.",
+    "آرامش یعنی همین که هست.",
+    "به خودت ایمان داشته باش.",
+    "هیچ‌وقت دیر نیست برای شروع دوباره.",
+    "خودت باش، بقیه نقش‌ها رو دیگران بازی می‌کنن.",
+    "زندگی مثل دوچرخه‌سواریه، برای تعادل باید حرکت کنی.",
+    "هر روز یه شروع جدیده.",
+    "بهترین انتقام موفقیت است.",
+    "عشق یعنی همین که هستی.",
+    "دل به دریا بزن، ساحل نزدیکه.",
+    "هر سختی یه آسونیه.",
+    "به امید فردا.",
+    "زندگی بدون ریسک، هیچی نیست.",
+    "خودت رو باور کن.",
+    "همیشه یه راهی هست.",
+    "هیچ‌وقت نگو هرگز.",
+    "با عشق زندگی کن.",
+    "لبخند بهترین آرایشه.",
+    "آرزو کن، تلاش کن، برس.",
+    "هر چیزی ممکنه.",
+    "به رویاهات ایمان داشته باش.",
+    "زندگی کوتاهه، قدرشو بدون.",
+    "دنیا رو با چشمای خودت ببین.",
+    "منحصر به فرد باش.",
+    "خودت رو دوست داشته باش.",
+    "بهترین نسخه خودت باش.",
+    "هر روز بهتر از دیروز.",
+    "زندگی یه هدیه‌ست.",
+    "با انرژی مثبت پیش برو.",
+    "هیچ‌وقت از تلاش دست نکش.",
+    "به خودت افتخار کن.",
+    "دنیا رو تغییر بده.",
+    "بهترین دوست خودت باش.",
+    "هر لحظه رو زندگی کن.",
+    "به آینده امیدوار باش.",
+    "خودت رو قبول داشته باش.",
+    "زندگی زیباست.",
+    "با لبخند به استقبال روز برو.",
+    "هر روز یه ماجراجویی جدیده.",
+    "بهترین چیزها رایگانن.",
+    "دلخوشی‌های کوچیک، خوشبختی‌های بزرگ.",
+    "زندگی یه سفر است، نه مقصد.",
+    "به مسیر ایمان داشته باش.",
+    "هر قدم یه پیشرفته.",
+    "خودت رو دست کم نگیر.",
+    "بهترین روزها در راهن.",
+    "با امید زندگی کن.",
+    "هر چالشی یه فرصته.",
+    "به خودت باور داشته باش.",
+    "زندگی پر از شگفتیه.",
+    "با عشق پیش برو.",
+    "هر روز یه فرصت جدیده.",
+    "بهترین نسخه خودت رو بساز.",
+    "خودت رو دوست بدار.",
+    "به دنیا لبخند بزن.",
+    "هر لحظه رو غنیمت بشمار.",
+    "به رویاهات چنگ بزن.",
+    "زندگی یه بازی است، درست بازی کن.",
+    "با انرژی مثبت زندگی کن.",
+    "هر روز یه هدیه‌ست.",
+    "به خودت ایمان داشته باش.",
+    "بهترین چیزها در انتظارن.",
+    "خودت رو باور کن.",
+    "هر روز یه شروع تازه‌ست.",
+    "به آینده امیدوار باش.",
+    "زندگی زیباست، ازش لذت ببر.",
+    "با لبخند زندگی کن.",
+    "هر روز یه ماجراست.",
+    "به خودت افتخار کن.",
+    "بهترین نسخه خودت باش.",
+    "خودت رو دوست داشته باش.",
+    "به دنیا عشق بورز.",
+    "هر لحظه رو زندگی کن.",
+    "به رویاهات ایمان بیار.",
+    "زندگی یه سفر است.",
+    "با امید پیش برو.",
+    "هر روز بهتر از دیروز.",
+    "به خودت باور داشته باش.",
+    "بهترین روزها در راهن.",
+    "خودت رو دست کم نگیر.",
+    "به مسیر ایمان داشته باش.",
+    "هر قدم یه پیشرفته.",
+    "به آینده امیدوار باش.",
+    "زندگی پر از شگفتیه.",
+    "با عشق زندگی کن.",
+    "هر روز یه فرصت جدیده.",
+    "به خودت ایمان داشته باش.",
+    "بهترین نسخه خودت رو بساز.",
+    "خودت رو دوست بدار.",
+    "به دنیا لبخند بزن.",
+    "هر لحظه رو غنیمت بشمار.",
+    "به رویاهات چنگ بزن.",
+    "زندگی یه بازی است.",
+    "با انرژی مثبت زندگی کن.",
+    "هر روز یه هدیه‌ست.",
+]
+
+# ---------- 10 سوال جرئت حقیقت (سخت‌تر/عمیق‌تر) ----------
+DEEP_TRUTH_OR_DARE = [
+    "بزرگ‌ترین راز زندگیت چیه که هیچ‌کس نمی‌دونه؟",
+    "اگه می‌تونستی به گذشته برگردی و یه تصمیم رو عوض کنی، کدوم تصمیم بود؟",
+    "چیزی که بیشتر از همه ازش پشیمونی چیه؟",
+    "اگه قرار بود امروز آخرین روز زندگیت باشه، به کی چی می‌گفتی؟",
+    "بزرگ‌ترین درسی که زندگی بهت داده چیه؟",
+    "چیزی که همیشه می‌خواستی بگی ولی نگرانی از واکنش دیگران باعث شده نگیش چیه؟",
+    "اگه می‌تونستی یه نفر رو ببخشی، کی رو انتخاب می‌کردی؟",
+    "بزرگ‌ترین ترس درونی‌ات چیه که هیچ‌وقت به کسی نگفتی؟",
+    "چیزی که باعث می‌شه احساس کنی واقعاً زنده‌ای چیه؟",
+    "اگه فقط یه جمله می‌تونستی به دنیا بگی، چی می‌گفتی؟",
+]
+
+# ==================== بارگذاری دیتا ====================
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -42,7 +366,10 @@ def save_data(d):
 
 data = load_data()
 
-# ---------- توابع کمکی ----------
+# ==================== توابع کمکی ====================
+def is_group(ck):
+    return ck.startswith("c") or ck.startswith("g")
+
 def is_owner(ck, uid):
     return str(data.get("owners", {}).get(ck, "")) == str(uid)
 
@@ -50,14 +377,7 @@ def is_admin(ck, uid):
     return str(uid) in [str(a) for a in data.get("admins", {}).get(ck, [])]
 
 def is_owner_or_admin(ck, uid):
-    if is_owner(ck, uid) or is_admin(ck, uid):
-        return True
-    # اگر مالک تنظیم نشده، اولین نفر مالک شود
-    if not data.get("owners", {}).get(ck):
-        data.setdefault("owners", {})[ck] = str(uid)
-        save_data(data)
-        return True
-    return False
+    return is_owner(ck, uid) or is_admin(ck, uid)
 
 def is_silenced(ck, uid):
     return str(uid) in [str(u) for u in data.get("silenced", {}).get(ck, [])]
@@ -70,87 +390,82 @@ def inc_count(ck, uid):
     mc[str(uid)] = mc.get(str(uid), 0) + 1
     save_data(data)
 
-def get_sender_id_from_reply(chat_id: str, message_id: str):
-    """استخراج sender_id از پیام ریپلای‌شده با API خام روبیکا"""
-    url = f"https://botapi.rubika.ir/v3/{TOKEN}/getMessage"
-    payload = {"chat_id": chat_id, "message_id": message_id}
-    try:
-        resp = requests.post(url, json=payload, timeout=10)
-        if resp.status_code == 200:
-            result = resp.json()
-            if result.get("status") == "OK":
-                msg = result.get("data", {}).get("message", {})
-                return str(msg.get("sender_id"))
-    except Exception as e:
-        print(f"⚠️ خطا در getMessage: {e}")
-    return None
+def normalize(cmd):
+    return cmd.replace(" ", "").replace("\u200c", "").replace("\u200f", "").replace("\u200e", "").strip().lower()
 
-def get_target(cmd_text: str, message):
-    """استخراج آیدی هدف از متن، لینک، یا ریپلای"""
-    # ۱. از ریپلای (با API خام)
+def get_target(cmd_text, message):
     if getattr(message, 'reply_to_message_id', None):
-        t = get_sender_id_from_reply(message.chat_id, message.reply_to_message_id)
-        if t:
-            return t
-
-    # ۲. از لینک پروفایل
+        if hasattr(message, 'reply_to_message') and message.reply_to_message:
+            replied = message.reply_to_message
+            if hasattr(replied, 'sender_id'):
+                return str(replied.sender_id)
+        try:
+            url = f"https://botapi.rubika.ir/v3/{TOKEN}/getMessage"
+            r = requests.post(url, json={
+                "chat_id": message.chat_id,
+                "message_id": message.reply_to_message_id
+            }, timeout=8)
+            if r.status_code == 200:
+                res = r.json()
+                if res.get("status") == "OK":
+                    msg = res.get("data", {}).get("message", {})
+                    sid = msg.get("sender_id")
+                    if sid:
+                        return str(sid)
+        except Exception:
+            pass
     m = re.search(r'rubika\.ir/([uc]0[0-9a-zA-Z]{10,})', cmd_text or "")
-    if m:
-        return m.group(1)
-
-    # ۳. از آیدی مستقیم
+    if m: return m.group(1)
     m = re.search(r'\b([uc]0[0-9a-zA-Z]{10,})\b', cmd_text or "")
-    if m:
-        return m.group(1)
-
+    if m: return m.group(1)
     return None
 
 HELP = """📚 **راهنمای ربات**
 
+👑 **مدیریت:**
 🔹 مالک — نمایش آیدی مالک گروه
-🔹 start / راهنما — نمایش این راهنما
+🔹 شناسه / شناسه من — نمایش آیدی خودتان
+🔹 شناسه او — نمایش آیدی کاربر ریپلای‌شده
+🔹 لیست ادمین — نمایش لیست ادمین‌ها
+🔹 ادمین / برکنار — با ریپلای یا آیدی
+
+⚙️ **تنظیمات:**
+🔹 قوانین / تنظیم قوانین <متن>
+🔹 تنظیم پیام خوش آمدی <متن> / حذف پیام خوش آمدی
+🔹 قفل کردن گروه / باز کردن گروه
+🔹 لینک قفل / لینک باز
+🔹 آیدی قفل / آیدی باز
+🔹 فحش قفل / فحش باز
+
+🛡️ **مدیریت اعضا:**
+🔹 حذف / بن / اخراج — با ریپلای یا آیدی
+🔹 اخطار / حذف اخطار — با ریپلای یا آیدی
+🔹 سکوت / حذف سکوت — با ریپلای یا آیدی
+🔹 پاک <تعداد> — ۱ تا ۵۰۰
+
+🎮 **سرگرمی:**
+🔹 چالش — یک چالش تصادفی
+🔹 جرئت — یک سوال جرئت یا حقیقت تصادفی
+🔹 بیو — یک متن بیو تصادفی
+🔹 جرئت حقیقت — یک سوال عمیق تصادفی
+🔹 بازی — لیست بازی‌های گروهی
+
+ℹ️ **عمومی:**
+🔹 آمار — آمار گروه
 🔹 ping / پینگ — سرعت پاسخ‌دهی
 🔹 time / زمان — ساعت فعلی
-🔹 id / شناسه — آیدی شما
-🔹 rules / قوانین — نمایش قوانین
-🔹 setrules / تنظیم قوانین <متن>
-🔹 stats / آمار — آمار گروه
-🔹 admins / ادمین‌ها — لیست ادمین‌ها
-🔹 lock / قفل کردن گروه — بستن گروه
-🔹 unlock / باز کردن گروه — باز کردن گروه
-🔹 delete / حذف — با ریپلای
-🔹 ban / بن — با ریپلای یا آیدی
-🔹 kick / اخراج — با ریپلای یا آیدی
-🔹 warn / اخطار — با ریپلای یا آیدی
-🔹 unwarn / حذف اخطار — با ریپلای یا آیدی
-🔹 silence / سکوت — با ریپلای یا آیدی
-🔹 unsilence / حذف سکوت — با ریپلای یا آیدی
-🔹 admin / ادمین — با ریپلای یا آیدی
-🔹 demote / برکنار — با ریپلای یا آیدی
-🔹 clear / پاک <تعداد> — ۱ تا ۵۰۰
-🔹 locklink / لینک قفل
-🔹 unlocklink / لینک باز
-🔹 lockid / آیدی قفل
-🔹 unlockid / آیدی باز
-🔹 lockbad / فحش قفل
-🔹 unlockbad / فحش باز
-🔹 setwelcome / تنظیم پیام خوش آمدی <متن>
-🔹 delwelcome / حذف پیام خوش آمدی
 """
 
-# ---------- HTTP Health Check ----------
+# ==================== HTTP Health Check ====================
 class HC(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"OK")
-    def log_message(self, *a):
-        pass
+        self.send_response(200); self.end_headers(); self.wfile.write(b"OK")
+    def log_message(self, *a): pass
 
 def run_http():
     HTTPServer(("0.0.0.0", int(os.environ.get("PORT", 8080))), HC).serve_forever()
 
-# ---------- هندلر اصلی ----------
+# ==================== هندلر اصلی ====================
 @bot.message_handler()
 def handle_all(message):
     try:
@@ -158,316 +473,57 @@ def handle_all(message):
             return
         raw = message.text.strip()
         cmd = raw.lstrip("/")
+        ncmd = normalize(cmd)
         ck = str(message.chat_id)
         uid = str(message.sender_id)
 
         inc_count(ck, uid)
 
-        # فیلترها (فقط در گروه)
-        if ck.startswith("c") or ck.startswith("g"):
+        # فیلترها (فقط در گروه) — ادمین و مالک معاف هستند
+        if is_group(ck):
             f = data.get("filters", {}).get(ck, {})
-            if f.get("link") and LINK_PATTERN.search(cmd):
-                bot.delete_message(message.chat_id, message.message_id)
-                return
-            if f.get("id") and ID_PATTERN.search(cmd):
-                bot.delete_message(message.chat_id, message.message_id)
-                return
-            if f.get("bad") and has_bad(cmd):
-                bot.delete_message(message.chat_id, message.message_id)
-                return
-            if ck in data.get("locked", []) and not is_owner_or_admin(ck, uid):
-                bot.delete_message(message.chat_id, message.message_id)
-                return
-            if is_silenced(ck, uid) and not is_owner_or_admin(ck, uid):
-                bot.delete_message(message.chat_id, message.message_id)
-                return
+            if not is_owner_or_admin(ck, uid):
+                if f.get("link") and LINK_PATTERN.search(cmd):
+                    bot.delete_message(message.chat_id, message.message_id); return
+                if f.get("id") and ID_PATTERN.search(cmd):
+                    bot.delete_message(message.chat_id, message.message_id); return
+                if f.get("bad") and has_bad(cmd):
+                    bot.delete_message(message.chat_id, message.message_id); return
+                if ck in data.get("locked", []):
+                    bot.delete_message(message.chat_id, message.message_id); return
+                if is_silenced(ck, uid):
+                    bot.delete_message(message.chat_id, message.message_id); return
 
-        # ---------- دستورات ----------
-        # دستور مالک (جدید)
-        if cmd in ("مالک", "owner"):
+        # ============ دستور مالک ============
+        if ncmd in ("مالک", "owner"):
             owner = data.get("owners", {}).get(ck)
             if owner:
-                bot.reply_to(message, f"👑 مالک گروه: `{owner}`")
+                bot.reply_to(message, f"👑 مالک گروه:\n`{owner}`")
             else:
-                bot.reply_to(message, "ℹ️ هنوز مالکی برای این گروه تنظیم نشده است.")
+                bot.reply_to(message, "ℹ️ هنوز مالکی تنظیم نشده.")
             return
 
-        if cmd in ("start", "راهنما", "help"):
-            # اگر مالک تنظیم نشده، اولین نفر مالک شود
-            if not data.get("owners", {}).get(ck):
+        # ============ راهنما / start ============
+        if ncmd in ("start", "راهنما", "help"):
+            if is_group(ck) and not data.get("owners", {}).get(ck):
                 data.setdefault("owners", {})[ck] = uid
                 save_data(data)
                 bot.reply_to(message, f"✅ شما به عنوان مالک گروه تنظیم شدید: `{uid}`")
             bot.reply_to(message, HELP)
             return
 
-        if cmd in ("ping", "پینگ"):
+        # ============ پینگ ============
+        if ncmd in ("ping", "پینگ"):
             start = time.time()
             bot.reply_to(message, "🏓 ...")
             elapsed = int((time.time() - start) * 1000)
             bot.reply_to(message, f"🏓 Pong! {elapsed}ms")
             return
 
-        if cmd in ("time", "زمان"):
+        # ============ زمان ============
+        if ncmd in ("time", "زمان"):
             bot.reply_to(message, f"🕐 {datetime.now():%Y/%m/%d - %H:%M:%S}")
             return
 
-        if cmd in ("id", "شناسه"):
-            t = get_target(cmd, message)
-            bot.reply_to(message, f"🆔 `{t or uid}`")
-            return
-
-        if cmd in ("delete", "حذف"):
-            if not message.reply_to_message_id:
-                bot.reply_to(message, "❌ روی یک پیام ریپلای کن.")
-                return
-            try:
-                bot.delete_message(message.chat_id, message.reply_to_message_id)
-                bot.reply_to(message, "✅ پیام حذف شد.")
-            except Exception as e:
-                bot.reply_to(message, f"❌ {e}")
-            return
-
-        if cmd.startswith("ban") or cmd.startswith("بن"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده.")
-                return
-            try:
-                bot.ban_member(chat_id=message.chat_id, sender_id=t)
-                data["banned"].setdefault(ck, []).append(t)
-                save_data(data)
-                bot.reply_to(message, f"🔨 {t} بن شد.")
-            except Exception as e:
-                bot.reply_to(message, f"❌ {e}")
-            return
-
-        if cmd.startswith("kick") or cmd.startswith("اخراج"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده.")
-                return
-            try:
-                bot.ban_member(chat_id=message.chat_id, sender_id=t)
-                bot.unban_member(chat_id=message.chat_id, sender_id=t)
-                bot.reply_to(message, "👢 کاربر اخراج شد.")
-            except Exception as e:
-                bot.reply_to(message, f"❌ {e}")
-            return
-
-        if cmd.startswith("warn") or cmd.startswith("اخطار"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده.")
-                return
-            w = data["warns"].setdefault(ck, {})
-            w[t] = w.get(t, 0) + 1
-            save_data(data)
-            if w[t] >= 3:
-                try:
-                    bot.ban_member(chat_id=message.chat_id, sender_id=t)
-                    bot.reply_to(message, f"🔨 {t} بن شد (۳ اخطار).")
-                except Exception as e:
-                    bot.reply_to(message, f"⚠️ {e}")
-            else:
-                bot.reply_to(message, f"⚠️ اخطار {w[t]}/۳ برای {t}.")
-            return
-
-        if cmd.startswith("unwarn") or cmd.startswith("حذف اخطار"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده.")
-                return
-            w = data["warns"].get(ck, {})
-            if t in w:
-                del w[t]
-                save_data(data)
-                bot.reply_to(message, "✅ اخطار پاک شد.")
-            else:
-                bot.reply_to(message, "ℹ️ اخطاری نداشت.")
-            return
-
-        if cmd in ("rules", "قوانین"):
-            r = data["rules"].get(ck)
-            bot.reply_to(message, f"📜 {r}" if r else "📜 تنظیم نشده.")
-            return
-
-        if cmd.startswith("setrules") or cmd.startswith("تنظیم قوانین"):
-            r = cmd.replace("setrules", "").replace("تنظیم قوانین", "").strip()
-            if not r:
-                bot.reply_to(message, "❌ متن بده.")
-                return
-            data["rules"][ck] = r
-            save_data(data)
-            bot.reply_to(message, "✅ تنظیم شد.")
-            return
-
-        if cmd.startswith("setwelcome") or cmd.startswith("تنظیم پیام خوش آمدی"):
-            w = cmd.replace("setwelcome", "").replace("تنظیم پیام خوش آمدی", "").strip()
-            if not w:
-                bot.reply_to(message, "❌ متن بده.")
-                return
-            data["welcome"][ck] = w
-            save_data(data)
-            bot.reply_to(message, "✅ تنظیم شد.")
-            return
-
-        if cmd in ("delwelcome", "حذف پیام خوش آمدی"):
-            if ck in data["welcome"]:
-                del data["welcome"][ck]
-                save_data(data)
-                bot.reply_to(message, "✅ حذف شد.")
-            else:
-                bot.reply_to(message, "ℹ️ تنظیم نشده بود.")
-            return
-
-        if cmd in ("lock", "قفل کردن گروه"):
-            if ck not in data["locked"]:
-                data["locked"].append(ck)
-                save_data(data)
-            bot.reply_to(message, "🔒 قفل شد.")
-            return
-
-        if cmd in ("unlock", "باز کردن گروه"):
-            if ck in data["locked"]:
-                data["locked"].remove(ck)
-                save_data(data)
-            bot.reply_to(message, "🔓 باز شد.")
-            return
-
-        if cmd.startswith("silence") or cmd.startswith("سکوت"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا بنویس: سکوت u0...")
-                return
-            s = data.setdefault("silenced", {}).setdefault(ck, [])
-            if t not in s:
-                s.append(t)
-                save_data(data)
-            bot.reply_to(message, f"🤐 {t} سکوت شد.")
-            return
-
-        if cmd.startswith("unsilence") or cmd.startswith("حذف سکوت"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا بنویس: حذف سکوت u0...")
-                return
-            s = data.setdefault("silenced", {}).setdefault(ck, [])
-            if t in s:
-                s.remove(t)
-                save_data(data)
-                bot.reply_to(message, f"🔊 {t} آزاد شد.")
-            else:
-                bot.reply_to(message, "ℹ️ سکوت نبود.")
-            return
-
-        if cmd in ("locklink", "لینک قفل"):
-            data.setdefault("filters", {}).setdefault(ck, {})["link"] = True
-            save_data(data)
-            bot.reply_to(message, "🔗 فیلتر لینک فعال شد.")
-            return
-        if cmd in ("unlocklink", "لینک باز"):
-            data.setdefault("filters", {}).setdefault(ck, {})["link"] = False
-            save_data(data)
-            bot.reply_to(message, "🔓 فیلتر لینک غیرفعال شد.")
-            return
-        if cmd in ("lockid", "آیدی قفل"):
-            data.setdefault("filters", {}).setdefault(ck, {})["id"] = True
-            save_data(data)
-            bot.reply_to(message, "🆔 فیلتر آیدی فعال شد.")
-            return
-        if cmd in ("unlockid", "آیدی باز"):
-            data.setdefault("filters", {}).setdefault(ck, {})["id"] = False
-            save_data(data)
-            bot.reply_to(message, "🔓 فیلتر آیدی غیرفعال شد.")
-            return
-        if cmd in ("lockbad", "فحش قفل"):
-            data.setdefault("filters", {}).setdefault(ck, {})["bad"] = True
-            save_data(data)
-            bot.reply_to(message, "🤬 فیلتر فحش فعال شد.")
-            return
-        if cmd in ("unlockbad", "فحش باز"):
-            data.setdefault("filters", {}).setdefault(ck, {})["bad"] = False
-            save_data(data)
-            bot.reply_to(message, "🔓 فیلتر فحش غیرفعال شد.")
-            return
-
-        if (cmd.startswith("admin") and not cmd.startswith("admins")) or (cmd.startswith("ادمین") and not cmd.startswith("ادمین‌ها")):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا بنویس: ادمین u0...")
-                return
-            a = data.setdefault("admins", {}).setdefault(ck, [])
-            if t not in a:
-                a.append(t)
-                save_data(data)
-            bot.reply_to(message, f"👑 {t} ادمین شد.")
-            return
-
-        if cmd.startswith("demote") or cmd.startswith("برکنار"):
-            t = get_target(cmd, message)
-            if not t:
-                bot.reply_to(message, "❌ ریپلای کن یا بنویس: برکنار u0...")
-                return
-            a = data.setdefault("admins", {}).setdefault(ck, [])
-            if t in a:
-                a.remove(t)
-                save_data(data)
-                bot.reply_to(message, f"🚫 {t} برکنار شد.")
-            else:
-                bot.reply_to(message, "ℹ️ ادمین نبود.")
-            return
-
-        if cmd in ("admins", "ادمین‌ها"):
-            a = data.get("admins", {}).get(ck, [])
-            o = data.get("owners", {}).get(ck, "—")
-            bot.reply_to(message, f"👑 مالک: `{o}`\n\n**ادمین‌ها:**\n" + ("\n".join(f"• `{x}`" for x in a) if a else "—"))
-            return
-
-        if cmd.startswith("clear") or cmd.startswith("پاک"):
-            p = cmd.replace("clear", "").replace("پاک", "").strip().split()
-            if not p or not p[0].isdigit():
-                bot.reply_to(message, "❌ پاک <۱-۵۰۰>")
-                return
-            n = int(p[0])
-            if not 1 <= n <= 500:
-                bot.reply_to(message, "❌ ۱ تا ۵۰۰.")
-                return
-            d = 0
-            for i in range(1, n + 1):
-                tid = message.message_id - i
-                if tid <= 0:
-                    break
-                try:
-                    bot.delete_message(message.chat_id, tid)
-                    d += 1
-                except:
-                    pass
-            bot.reply_to(message, f"🧹 {d} پیام پاک شد.")
-            return
-
-        if cmd in ("stats", "آمار"):
-            w = data["warns"].get(ck, {})
-            b = data["banned"].get(ck, [])
-            mc = data.get("msg_count", {}).get(ck, {})
-            top = sorted(mc.items(), key=lambda x: -x[1])[:10]
-            top_s = "\n".join(f"{i}. [{u}](https://rubika.ir/{u}) — {c} پیام" for i, (u, c) in enumerate(top, 1)) or "—"
-            f = data.get("filters", {}).get(ck, {})
-            bot.reply_to(message,
-                f"📊 **آمار**\n👤 مالک: `{data.get('owners',{}).get(ck,'—')}`\n"
-                f"👑 ادمین‌ها: {len(data.get('admins',{}).get(ck,[]))}\n"
-                f"🔒 گروه: {'بسته' if ck in data.get('locked',[]) else 'باز'}\n"
-                f"فیلترها: 🔗{'✅' if f.get('link') else '❌'} 🆔{'✅' if f.get('id') else '❌'} 🤬{'✅' if f.get('bad') else '❌'}\n"
-                f"🤐 سکوت: {len(data.get('silenced',{}).get(ck,[]))} | 👥 بن: {len(b)} | ⚠️ اخطار: {len(w)}\n"
-                f"💬 کل: {sum(mc.values())}\n\n🏆 **۱۰ نفر اول:**\n{top_s}"
-            )
-            return
-
-    except Exception as e:
-        print(f"❌ خطا: {e}")
-
-# ---------- اجرا ----------
-if __name__ == "__main__":
-    threading.Thread(target=run_http, daemon=True).start()
-    print("✅ ربات فعال شد!")
-    bot.polling()
+        # ============ شناسه ============
+        if 
