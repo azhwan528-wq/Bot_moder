@@ -156,12 +156,12 @@ async def handle_all(bot, event):
         if text in ("start", "راهنما", "help"):
             await event.reply(HELP); return
 
-        # ✅ پینگ با اندازه‌گیری سرعت
+        # ✅ پینگ با اندازه‌گیری سرعت (بدون edit)
         if text in ("ping", "پینگ"):
             start = time.time()
-            msg = await event.reply("🏓 در حال اندازه‌گیری...")
+            await event.reply("🏓 ...")  # پیام اولیه
             elapsed = int((time.time() - start) * 1000)
-            await event.edit(msg.message_id, f"🏓 Pong! {elapsed}ms")
+            await event.reply(f"🏓 Pong! {elapsed}ms")
             return
 
         if text in ("time", "زمان"):
