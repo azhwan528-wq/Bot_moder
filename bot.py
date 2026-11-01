@@ -816,7 +816,7 @@ def handle_all(message):
             bot.reply_to(message, f"🎲 **جرئت یا حقیقت:**\n\n{random.choice(TRUTH_OR_DARE)}"); return
         if ncmd in ("بیو", "bio"):
             bot.reply_to(message, f"✨ **بیو:**\n\n{random.choice(BIOS)}"); return
-        if ncmd in ("جرئتحقیقت", "deeptruth"):
+        if ncmd in ("جرئت حقیقت", "deeptruth"):
             bot.reply_to(message, f"💭 **جرئت حقیقت (عمیق):**\n\n{random.choice(DEEP_TRUTH_OR_DARE)}"); return
         if ncmd in ("جوک", "joke"):
             bot.reply_to(message, f"😂 **جوک:**\n\n{random.choice(JOKES)}"); return
