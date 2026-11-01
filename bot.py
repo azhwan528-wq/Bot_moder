@@ -18,7 +18,6 @@ if not TOKEN:
 bot = RubiBot(TOKEN)
 DATA_FILE = "bot_data.json"
 
-# ==================== لیست فحش ====================
 BAD_WORDS = [
     "کس", "کیر", "کص", "کون", "جنده", "حرومزاده", "حروم", "لاشی",
     "گوه", "گوز", "پدرسگ", "مادرسگ", "سگ", "سگی", "خارکسه", "خارکصه",
@@ -31,8 +30,6 @@ LINK_PATTERN = re.compile(r'(https?://|www\.|t\.me/|rubika\.ir/|@[A-Za-z0-9_]{5,
 ID_PATTERN = re.compile(r'(u0[0-9a-zA-Z]{10,}|@[A-Za-z0-9_]{5,})')
 
 # ==================== لیست‌های سرگرمی ====================
-
-# ---------- 100 چالش ----------
 CHALLENGES = [
     "بهترین خاطره‌ات از دوران مدرسه رو تعریف کن.",
     "آخرین باری که از ته دل خندیدی کی بود؟",
@@ -135,7 +132,6 @@ CHALLENGES = [
     "دوست داری چه چیزی رو در دنیا ببینی؟",
 ]
 
-# ---------- 100 سوال جرئت یا حقیقت ----------
 TRUTH_OR_DARE = [
     "بزرگترین ترس زندگی‌ات چیه؟",
     "آخرین باری که گریه کردی کی بود و چرا؟",
@@ -236,7 +232,6 @@ TRUTH_OR_DARE = [
     "دوست داری چه چیزی رو قطعاً تجربه کنی؟",
 ]
 
-# ---------- 100 متن بیو ----------
 BIOS = [
     "دنیا محل عبوره، ما هم رهگذریم.",
     "هرچی که دارم از لطف توست.",
@@ -339,7 +334,6 @@ BIOS = [
     "هر روز یه هدیه‌ست.",
 ]
 
-# ---------- 10 سوال جرئت حقیقت (سخت‌تر/عمیق‌تر) ----------
 DEEP_TRUTH_OR_DARE = [
     "بزرگ‌ترین راز زندگیت چیه که هیچ‌کس نمی‌دونه؟",
     "اگه می‌تونستی به گذشته برگردی و یه تصمیم رو عوض کنی، کدوم تصمیم بود؟",
@@ -353,7 +347,37 @@ DEEP_TRUTH_OR_DARE = [
     "اگه فقط یه جمله می‌تونستی به دنیا بگی، چی می‌گفتی؟",
 ]
 
-# ==================== بارگذاری دیتا ====================
+# ==================== لیست پیشوندهای دستورات ====================
+# این‌ها از فیلترها معاف هستند
+COMMAND_PREFIXES = [
+    "start", "راهنما", "help", "ping", "پینگ", "time", "زمان",
+    "شناسهمن", "شناسهاو", "شناسه", "id", "myid", "theirid",
+    "مالک", "owner", "delete", "حذف", "ban", "بن", "kick", "اخراج",
+    "warn", "اخطار", "unwarn", "حذفاخطار", "rules", "قوانین",
+    "setrules", "تنظیمقوانین", "setwelcome", "تنظیمپیامخوشآمدی",
+    "delwelcome", "حذفپیامخوشآمدی", "lock", "قفلکردنگروه", "قفل",
+    "unlock", "بازکردنگروه", "بازکردن", "silence", "سکوت",
+    "unsilence", "حذفسکوت", "locklink", "لینکقفل", "unlocklink", "لینکباز",
+    "lockid", "آیدیقفل", "unlockid", "آیدیباز", "lockbad", "فحشقفل",
+    "unlockbad", "فحشباز", "admins", "adminlist", "ادمینها", "لیستادمین",
+    "admin", "ادمین", "demote", "برکنار", "clear", "پاک", "stats", "آمار",
+    "چالش", "challenge", "جرئت", "dare", "truthordare", "بیو", "bio",
+    "جرئتحقیقت", "deeptruth", "بازی", "game", "games",
+]
+
+def normalize(cmd):
+    """نرمال‌سازی: حذف فاصله، یکسان‌سازی حروف فارسی/عربی"""
+    c = cmd.replace(" ", "").replace("\u200c", "").replace("\u200f", "").replace("\u200e", "").strip().lower()
+    # یکسان‌سازی فارسی/عربی (که در کیبوردها فرق می‌کنن)
+    c = c.replace("ي", "ی").replace("ك", "ک").replace("ة", "ه").replace("أ", "ا").replace("إ", "ا").replace("آ", "ا")
+    return c
+
+def is_command_text(ncmd):
+    for p in COMMAND_PREFIXES:
+        if ncmd.startswith(p):
+            return True
+    return False
+
 def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -366,7 +390,6 @@ def save_data(d):
 
 data = load_data()
 
-# ==================== توابع کمکی ====================
 def is_group(ck):
     return ck.startswith("c") or ck.startswith("g")
 
@@ -390,9 +413,6 @@ def inc_count(ck, uid):
     mc[str(uid)] = mc.get(str(uid), 0) + 1
     save_data(data)
 
-def normalize(cmd):
-    return cmd.replace(" ", "").replace("\u200c", "").replace("\u200f", "").replace("\u200e", "").strip().lower()
-
 def get_target(cmd_text, message):
     if getattr(message, 'reply_to_message_id', None):
         if hasattr(message, 'reply_to_message') and message.reply_to_message:
@@ -401,17 +421,12 @@ def get_target(cmd_text, message):
                 return str(replied.sender_id)
         try:
             url = f"https://botapi.rubika.ir/v3/{TOKEN}/getMessage"
-            r = requests.post(url, json={
-                "chat_id": message.chat_id,
-                "message_id": message.reply_to_message_id
-            }, timeout=8)
+            r = requests.post(url, json={"chat_id": message.chat_id, "message_id": message.reply_to_message_id}, timeout=8)
             if r.status_code == 200:
                 res = r.json()
                 if res.get("status") == "OK":
-                    msg = res.get("data", {}).get("message", {})
-                    sid = msg.get("sender_id")
-                    if sid:
-                        return str(sid)
+                    sid = res.get("data", {}).get("message", {}).get("sender_id")
+                    if sid: return str(sid)
         except Exception:
             pass
     m = re.search(r'rubika\.ir/([uc]0[0-9a-zA-Z]{10,})', cmd_text or "")
@@ -423,10 +438,9 @@ def get_target(cmd_text, message):
 HELP = """📚 **راهنمای ربات**
 
 👑 **مدیریت:**
-🔹 مالک — نمایش آیدی مالک گروه
-🔹 شناسه / شناسه من — نمایش آیدی خودتان
-🔹 شناسه او — نمایش آیدی کاربر ریپلای‌شده
-🔹 لیست ادمین — نمایش لیست ادمین‌ها
+🔹 مالک — نمایش آیدی مالک
+🔹 شناسه / شناسه من / شناسه او
+🔹 لیست ادمین — نمایش ادمین‌ها
 🔹 ادمین / برکنار — با ریپلای یا آیدی
 
 ⚙️ **تنظیمات:**
@@ -439,24 +453,17 @@ HELP = """📚 **راهنمای ربات**
 
 🛡️ **مدیریت اعضا:**
 🔹 حذف / بن / اخراج — با ریپلای یا آیدی
-🔹 اخطار / حذف اخطار — با ریپلای یا آیدی
-🔹 سکوت / حذف سکوت — با ریپلای یا آیدی
+🔹 اخطار / حذف اخطار
+🔹 سکوت / حذف سکوت
 🔹 پاک <تعداد> — ۱ تا ۵۰۰
 
 🎮 **سرگرمی:**
-🔹 چالش — یک چالش تصادفی
-🔹 جرئت — یک سوال جرئت یا حقیقت تصادفی
-🔹 بیو — یک متن بیو تصادفی
-🔹 جرئت حقیقت — یک سوال عمیق تصادفی
-🔹 بازی — لیست بازی‌های گروهی
+🔹 چالش / جرئت / بیو / جرئت حقیقت / بازی
 
 ℹ️ **عمومی:**
-🔹 آمار — آمار گروه
-🔹 ping / پینگ — سرعت پاسخ‌دهی
-🔹 time / زمان — ساعت فعلی
+🔹 آمار / ping / time
 """
 
-# ==================== HTTP Health Check ====================
 class HC(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200); self.end_headers(); self.wfile.write(b"OK")
@@ -465,7 +472,6 @@ class HC(BaseHTTPRequestHandler):
 def run_http():
     HTTPServer(("0.0.0.0", int(os.environ.get("PORT", 8080))), HC).serve_forever()
 
-# ==================== هندلر اصلی ====================
 @bot.message_handler()
 def handle_all(message):
     try:
@@ -479,20 +485,22 @@ def handle_all(message):
 
         inc_count(ck, uid)
 
-        # فیلترها (فقط در گروه) — ادمین و مالک معاف هستند
-        if is_group(ck):
+        # ⭐ STEP 1: چک کنیم آیا این پیام یک دستور است یا نه
+        is_cmd = is_command_text(ncmd)
+
+        # ⭐ STEP 2: فیلترها فقط برای پیام‌های غیردستوری و غیرادمین
+        if is_group(ck) and not is_cmd and not is_owner_or_admin(ck, uid):
             f = data.get("filters", {}).get(ck, {})
-            if not is_owner_or_admin(ck, uid):
-                if f.get("link") and LINK_PATTERN.search(cmd):
-                    bot.delete_message(message.chat_id, message.message_id); return
-                if f.get("id") and ID_PATTERN.search(cmd):
-                    bot.delete_message(message.chat_id, message.message_id); return
-                if f.get("bad") and has_bad(cmd):
-                    bot.delete_message(message.chat_id, message.message_id); return
-                if ck in data.get("locked", []):
-                    bot.delete_message(message.chat_id, message.message_id); return
-                if is_silenced(ck, uid):
-                    bot.delete_message(message.chat_id, message.message_id); return
+            if f.get("link") and LINK_PATTERN.search(cmd):
+                bot.delete_message(message.chat_id, message.message_id); return
+            if f.get("id") and ID_PATTERN.search(cmd):
+                bot.delete_message(message.chat_id, message.message_id); return
+            if f.get("bad") and has_bad(cmd):
+                bot.delete_message(message.chat_id, message.message_id); return
+            if ck in data.get("locked", []):
+                bot.delete_message(message.chat_id, message.message_id); return
+            if is_silenced(ck, uid):
+                bot.delete_message(message.chat_id, message.message_id); return
 
         # ============ دستور مالک ============
         if ncmd in ("مالک", "owner"):
@@ -520,10 +528,248 @@ def handle_all(message):
             bot.reply_to(message, f"🏓 Pong! {elapsed}ms")
             return
 
-        # ============ زمان ============
         if ncmd in ("time", "زمان"):
             bot.reply_to(message, f"🕐 {datetime.now():%Y/%m/%d - %H:%M:%S}")
             return
 
         # ============ شناسه ============
-        if 
+        if ncmd in ("شناسهمن", "myid"):
+            bot.reply_to(message, f"🆔 شناسه شما: `{uid}`")
+            return
+        if ncmd in ("شناسهاو", "theirid"):
+            t = get_target(cmd, message)
+            if t and t != uid:
+                bot.reply_to(message, f"🆔 شناسه: `{t}`")
+            else:
+                bot.reply_to(message, "❌ روی پیام کاربر ریپلای کن.")
+            return
+        if ncmd in ("شناسه", "id"):
+            if getattr(message, 'reply_to_message_id', None):
+                t = get_target(cmd, message)
+                if t and t != uid:
+                    bot.reply_to(message, f"🆔 شناسه: `{t}`"); return
+            bot.reply_to(message, f"🆔 شناسه شما: `{uid}`")
+            return
+
+        # ============ حذف ============
+        if ncmd in ("delete", "حذف"):
+            if not message.reply_to_message_id:
+                bot.reply_to(message, "❌ روی یک پیام ریپلای کن."); return
+            try:
+                bot.delete_message(message.chat_id, message.reply_to_message_id)
+                bot.reply_to(message, "✅ پیام حذف شد.")
+            except Exception as e:
+                bot.reply_to(message, f"❌ {e}")
+            return
+
+        # ============ بن ============
+        if ncmd.startswith("ban") or ncmd.startswith("بن"):
+            t = get_target(cmd, message)
+            if not t:
+                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده."); return
+            if is_owner_or_admin(ck, t):
+                bot.reply_to(message, "⚠️ نمی‌توان مالک یا ادمین را بن کرد."); return
+            try:
+                bot.ban_member(chat_id=message.chat_id, sender_id=t)
+                data["banned"].setdefault(ck, []).append(t); save_data(data)
+                bot.reply_to(message, f"🔨 {t} بن شد.")
+            except Exception as e:
+                bot.reply_to(message, f"❌ {e}")
+            return
+
+        if ncmd.startswith("kick") or ncmd.startswith("اخراج"):
+            t = get_target(cmd, message)
+            if not t:
+                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده."); return
+            if is_owner_or_admin(ck, t):
+                bot.reply_to(message, "⚠️ نمی‌توان مالک یا ادمین را اخراج کرد."); return
+            try:
+                bot.ban_member(chat_id=message.chat_id, sender_id=t)
+                bot.unban_member(chat_id=message.chat_id, sender_id=t)
+                bot.reply_to(message, "👢 کاربر اخراج شد.")
+            except Exception as e:
+                bot.reply_to(message, f"❌ {e}")
+            return
+
+        if ncmd.startswith("warn") or ncmd.startswith("اخطار"):
+            t = get_target(cmd, message)
+            if not t:
+                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده."); return
+            if is_owner_or_admin(ck, t):
+                bot.reply_to(message, "⚠️ نمی‌توان به مالک یا ادمین اخطار داد."); return
+            w = data["warns"].setdefault(ck, {}); w[t] = w.get(t, 0) + 1; save_data(data)
+            if w[t] >= 3:
+                try:
+                    bot.ban_member(chat_id=message.chat_id, sender_id=t)
+                    bot.reply_to(message, f"🔨 {t} بن شد (۳ اخطار).")
+                except Exception as e:
+                    bot.reply_to(message, f"⚠️ {e}")
+            else:
+                bot.reply_to(message, f"⚠️ اخطار {w[t]}/۳ برای {t}.")
+            return
+
+        if ncmd.startswith("unwarn") or ncmd.startswith("حذفاخطار"):
+            t = get_target(cmd, message)
+            if not t:
+                bot.reply_to(message, "❌ ریپلای کن یا آیدی/لینک بده."); return
+            w = data["warns"].get(ck, {})
+            if t in w: del w[t]; save_data(data); bot.reply_to(message, "✅ اخطار پاک شد.")
+            else: bot.reply_to(message, "ℹ️ اخطاری نداشت.")
+            return
+
+        # ============ قوانین ============
+        if ncmd in ("rules", "قوانین"):
+            r = data["rules"].get(ck)
+            bot.reply_to(message, f"📜 {r}" if r else "📜 تنظیم نشده.")
+            return
+        if ncmd.startswith("setrules") or ncmd.startswith("تنظیمقوانین"):
+            r = cmd.replace("setrules", "").replace("تنظیم قوانین", "").strip()
+            if not r: bot.reply_to(message, "❌ متن بده."); return
+            data["rules"][ck] = r; save_data(data); bot.reply_to(message, "✅ تنظیم شد.")
+            return
+
+        # ============ خوش آمد ============
+        if ncmd.startswith("setwelcome") or ncmd.startswith("تنظیمپیامخوشآمدی"):
+            w = cmd.replace("setwelcome", "").replace("تنظیم پیام خوش آمدی", "").strip()
+            if not w: bot.reply_to(message, "❌ متن بده."); return
+            data["welcome"][ck] = w; save_data(data); bot.reply_to(message, "✅ تنظیم شد.")
+            return
+        if ncmd in ("delwelcome", "حذفپیامخوشآمدی"):
+            if ck in data["welcome"]: del data["welcome"][ck]; save_data(data); bot.reply_to(message, "✅ حذف شد.")
+            else: bot.reply_to(message, "ℹ️ تنظیم نشده بود.")
+            return
+
+        # ============ قفل گروه ============
+        if ncmd in ("lock", "قفلکردنگروه", "قفل"):
+            if ck not in data["locked"]: data["locked"].append(ck); save_data(data)
+            bot.reply_to(message, "🔒 قفل شد. (ادمین‌ها و مالک معاف هستند)")
+            return
+        if ncmd in ("unlock", "بازکردنگروه", "بازکردن"):
+            if ck in data["locked"]: data["locked"].remove(ck); save_data(data)
+            bot.reply_to(message, "🔓 باز شد.")
+            return
+
+        # ============ سکوت ============
+        if ncmd.startswith("unsilence") or ncmd.startswith("حذفسکوت"):
+            t = get_target(cmd, message)
+            if not t: bot.reply_to(message, "❌ ریپلای کن یا بنویس: حذف سکوت u0..."); return
+            s = data.setdefault("silenced", {}).setdefault(ck, [])
+            if t in s: s.remove(t); save_data(data); bot.reply_to(message, f"🔊 {t} آزاد شد.")
+            else: bot.reply_to(message, "ℹ️ سکوت نبود.")
+            return
+        if ncmd.startswith("silence") or ncmd.startswith("سکوت"):
+            t = get_target(cmd, message)
+            if not t: bot.reply_to(message, "❌ ریپلای کن یا بنویس: سکوت u0..."); return
+            if is_owner_or_admin(ck, t):
+                bot.reply_to(message, "⚠️ نمی‌توان مالک یا ادمین را سکوت کرد."); return
+            s = data.setdefault("silenced", {}).setdefault(ck, [])
+            if t not in s: s.append(t); save_data(data)
+            bot.reply_to(message, f"🤐 {t} سکوت شد.")
+            return
+
+        # ============ فیلترها ============
+        if ncmd in ("locklink", "لینکقفل"):
+            data.setdefault("filters", {}).setdefault(ck, {})["link"] = True; save_data(data); bot.reply_to(message, "🔗 فیلتر لینک فعال شد."); return
+        if ncmd in ("unlocklink", "لینکباز"):
+            data.setdefault("filters", {}).setdefault(ck, {})["link"] = False; save_data(data); bot.reply_to(message, "🔓 فیلتر لینک غیرفعال شد."); return
+        if ncmd in ("lockid", "آیدیقفل"):
+            data.setdefault("filters", {}).setdefault(ck, {})["id"] = True; save_data(data); bot.reply_to(message, "🆔 فیلتر آیدی فعال شد."); return
+        if ncmd in ("unlockid", "آیدیباز"):
+            data.setdefault("filters", {}).setdefault(ck, {})["id"] = False; save_data(data); bot.reply_to(message, "🔓 فیلتر آیدی غیرفعال شد."); return
+        if ncmd in ("lockbad", "فحشقفل"):
+            data.setdefault("filters", {}).setdefault(ck, {})["bad"] = True; save_data(data); bot.reply_to(message, "🤬 فیلتر فحش فعال شد."); return
+        if ncmd in ("unlockbad", "فحشباز"):
+            data.setdefault("filters", {}).setdefault(ck, {})["bad"] = False; save_data(data); bot.reply_to(message, "🔓 فیلتر فحش غیرفعال شد."); return
+
+        # ⭐⭐⭐ لیست ادمین — چک قبل از ادمین (افزودن) ⭐⭐⭐
+        if ncmd in ("admins", "adminlist") or "لیستادمین" in ncmd or (ncmd.startswith("ادمین") and ncmd.endswith("ها")) or ncmd == "ادمینها":
+            a = data.get("admins", {}).get(ck, [])
+            o = data.get("owners", {}).get(ck, "—")
+            msg = f"👑 مالک: `{o}`\n\n**ادمین‌ها:**\n"
+            msg += "\n".join(f"• `{x}`" for x in a) if a else "—"
+            bot.reply_to(message, msg)
+            return
+
+        # ============ ادمین (افزودن) ============
+        if ncmd.startswith("admin") or ncmd.startswith("ادمین"):
+            if not is_group(ck):
+                bot.reply_to(message, "❌ این دستور فقط در گروه کار می‌کند."); return
+            t = get_target(cmd, message)
+            if not t:
+                bot.reply_to(message, "❌ ریپلای کن یا بنویس: ادمین u0..."); return
+            a = data.setdefault("admins", {}).setdefault(ck, [])
+            if t in a:
+                bot.reply_to(message, f"ℹ️ {t} از قبل ادمین است.")
+            else:
+                a.append(t); save_data(data)
+                bot.reply_to(message, f"👑 {t} ادمین شد. (معاف از تمام محدودیت‌ها)")
+            return
+
+        if ncmd.startswith("demote") or ncmd.startswith("برکنار"):
+            t = get_target(cmd, message)
+            if not t:
+                bot.reply_to(message, "❌ ریپلای کن یا بنویس: برکنار u0..."); return
+            a = data.setdefault("admins", {}).setdefault(ck, [])
+            if t in a: a.remove(t); save_data(data); bot.reply_to(message, f"🚫 {t} برکنار شد.")
+            else: bot.reply_to(message, "ℹ️ ادمین نبود.")
+            return
+
+        # ============ پاک ============
+        if ncmd.startswith("clear") or ncmd.startswith("پاک"):
+            p = cmd.replace("clear", "").replace("پاک", "").strip().split()
+            if not p or not p[0].isdigit():
+                bot.reply_to(message, "❌ پاک <۱-۵۰۰>"); return
+            n = int(p[0])
+            if not 1 <= n <= 500:
+                bot.reply_to(message, "❌ ۱ تا ۵۰۰."); return
+            d = 0
+            for i in range(1, n + 1):
+                tid = message.message_id - i
+                if tid <= 0: break
+                try: bot.delete_message(message.chat_id, tid); d += 1
+                except: pass
+            bot.reply_to(message, f"🧹 {d} پیام پاک شد.")
+            return
+
+        # ============ آمار ============
+        if ncmd in ("stats", "آمار"):
+            w = data["warns"].get(ck, {}); b = data["banned"].get(ck, []); mc = data.get("msg_count", {}).get(ck, {})
+            top = sorted(mc.items(), key=lambda x: -x[1])[:10]
+            top_s = "\n".join(f"{i}. `{u}` — {c} پیام" for i, (u, c) in enumerate(top, 1)) or "—"
+            f = data.get("filters", {}).get(ck, {})
+            bot.reply_to(message,
+                f"📊 **آمار گروه**\n\n"
+                f"👤 مالک: `{data.get('owners',{}).get(ck,'—')}`\n"
+                f"👑 ادمین‌ها: {len(data.get('admins',{}).get(ck,[]))}\n"
+                f"🔒 گروه: {'بسته' if ck in data.get('locked',[]) else 'باز'}\n"
+                f"فیلترها: 🔗{'✅' if f.get('link') else '❌'} 🆔{'✅' if f.get('id') else '❌'} 🤬{'✅' if f.get('bad') else '❌'}\n"
+                f"🤐 سکوت: {len(data.get('silenced',{}).get(ck,[]))} | 👥 بن: {len(b)} | ⚠️ اخطار: {len(w)}\n"
+                f"💬 کل: {sum(mc.values())}\n\n"
+                f"🏆 **۱۰ نفر اول:**\n{top_s}"
+            )
+            return
+
+        # ==================== سرگرمی ====================
+        if ncmd in ("چالش", "challenge"):
+            bot.reply_to(message, f"🎯 **چالش:**\n\n{random.choice(CHALLENGES)}"); return
+        if ncmd in ("جرئت", "dare", "truthordare"):
+            bot.reply_to(message, f"🎲 **جرئت یا حقیقت:**\n\n{random.choice(TRUTH_OR_DARE)}"); return
+        if ncmd in ("بیو", "bio"):
+            bot.reply_to(message, f"✨ **بیو:**\n\n{random.choice(BIOS)}"); return
+        if ncmd in ("جرئتحقیقت", "deeptruth"):
+            bot.reply_to(message, f"💭 **جرئت حقیقت (عمیق):**\n\n{random.choice(DEEP_TRUTH_OR_DARE)}"); return
+        if ncmd in ("بازی", "game", "games"):
+            bot.reply_to(message,
+                "🎮 **بازی‌های گروهی:**\n\n"
+                "1. حدس کلمه\n2. بیست سوالی\n3. اسم فامیل\n"
+                "4. جرئت یا حقیقت (دستور «جرئت»)\n5. چالش (دستور «چالش»)\n"
+                "6. داستان‌سازی\n7. پانتومیم\n8. حدس آهنگ"
+            ); return
+
+    except Exception as e:
+        print(f"❌ خطا: {e}")
+
+if __name__ == "__main__":
+    threading.Thread(target=run_http, daemon=True).start()
+    print("✅ ربات فعال شد!")
+    bot.polling()
