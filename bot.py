@@ -347,8 +347,64 @@ DEEP_TRUTH_OR_DARE = [
     "اگه فقط یه جمله می‌تونستی به دنیا بگی، چی می‌گفتی؟",
 ]
 
+# ---------- 50 جوک ----------
+JOKES = [
+    "به یارو میگن چرا دیر اومدی؟ میگه آخه ساعت ۳ بود، گفتم صبر کنم ۴ بشه!",
+    "به یارو میگن تو خونه‌تون چند تا اتاق داره؟ میگه والا من تو راهرو زندگی می‌کنم!",
+    "یه بار به دوستم گفتم بریم ماهیگیری، گفت آخه من شنا بلد نیستم!",
+    "به یارو میگن چرا ریشات رو نمی‌زنی؟ میگه آخه این ریش‌ها رو با پول درآوردم!",
+    "به یارو میگن تو مدرسه چی یاد گرفتی؟ میگه یاد گرفتم که تو مدرسه چیزی یاد نمی‌دن!",
+    "یه بار یه پنگوئن رفت رستوران، گارسون گفت چی می‌خوری؟ گفت ماهی. گارسون گفت چه نوعی؟ گفت سرد!",
+    "به یارو میگن اگه یه روز پولدار بشی چیکار می‌کنی؟ میگه می‌رم یه پیتزا می‌خرم، اونم بزرگش!",
+    "به استاد گفتن چرا نمره من صفره؟ گفت چون تو برگه‌ت هیچی ننوشتی. گفت آخه من با اشاره حرف می‌زدم!",
+    "به یارو میگن چرا از خونه فرار کردی؟ میگه آخه دیوارها داشتن بهم نزدیک می‌شدن!",
+    "یه بار یه گربه رفت پیش دکتر، دکتر گفت چی شده؟ گفت میو!",
+    "به یارو میگن چرا داری با تلفن حرف می‌زنی؟ میگه آخه این تلفن با من حرف می‌زنه!",
+    "یه بار یه خرس رفت فروشگاه، فروشنده گفت چی می‌خوای؟ گفت عسل. فروشنده گفت چه مارکی؟ گفت وحشی!",
+    "به یارو میگن چرا اینقدر می‌خندی؟ میگه آخه یادم اومد دیروز چرا می‌خندیدم!",
+    "یه بار یه ماهی رفت پیش ملوان، گفت چرا منو گرفتی؟ ملوان گفت تو خودت اومدی تو تور!",
+    "به یارو میگن تو خواب چی می‌بینی؟ میگه خواب می‌بینم بیدارم، بعد بیدار می‌شم می‌بینم خوابم!",
+    "به استاد گفتن چرا کلاس تعطیله؟ گفت چون من امروز حالم خوبه!",
+    "یه بار یه پرنده رفت رستوران، گارسون گفت چی می‌خوری؟ گفت کرم، ولی سرخ شده باشه!",
+    "به یارو میگن چرا پاهات کجه؟ میگه آخه از بچگی با کج‌ها بزرگ شدم!",
+    "به یارو میگن تو ماهیگیری بلدی؟ میگه آره، فقط ماهی‌ها بلد نیستن!",
+    "یه بار یه فیل رفت تو یه مغازه، فروشنده گفت داداش ما جاش نداریم!",
+    "به یارو میگن چرا اینقدر لاغری؟ میگه آخه من با هوا زندگی می‌کنم!",
+    "به یارو میگن چرا ازدواج نکردی؟ میگه آخه من عاشق خودمم!",
+    "یه بار یه سگ رفت پیش گربه، گفت میای دوست بشیم؟ گربه گفت برو بابا تو سگی!",
+    "به یارو میگن چرا مدرسه نرفتی؟ میگه آخه من تو مدرسه معلم بودم!",
+    "به یارو میگن تو فوتبال بازی می‌کنی؟ میگه آره، ولی توپ رو نمی‌زنم، توپ منو می‌زنه!",
+    "یه بار یه گاو رفت پیش دکتر، دکتر گفت چی شده؟ گفت شیرم خشک شده، دکتر گفت خب آب بخور!",
+    "به یارو میگن چرا موهات سفیده؟ میگه آخه از بچگی پیر بودم!",
+    "به یارو میگن تو چی می‌خونی؟ میگه من کتاب نمی‌خونم، کتاب منو می‌خونه!",
+    "یه بار یه لاک‌پشت رفت مسابقه دو، گفت من اول می‌شم، ولی سال دیگه!",
+    "به یارو میگن چرا از ارتفاع می‌ترسی؟ میگه آخه از بچگی از بالا نگاه می‌کردم!",
+    "به یارو میگن تو شنا بلدی؟ میگه آره، فقط تو آب غرق می‌شم!",
+    "یه بار یه خرگوش رفت پیش لاک‌پشت، گفت مسابقه بدیم؟ لاک‌پشت گفت باشه، ولی من امروز وقت ندارم!",
+    "به یارو میگن چرا اینقدر می‌خوابی؟ میگه آخه خواب بهترین دوست منه!",
+    "به یارو میگن چرا اینقدر می‌خوری؟ میگه آخه من با غذا حرف می‌زنم!",
+    "یه بار یه گربه رفت پیش ماهی، گفت بیا دوست بشیم، ماهی گفت برو بابا تو گربه‌ای!",
+    "به یارو میگن تو آشپزی بلدی؟ میگه آره، فقط غذاهام خوراکی نیستن!",
+    "به یارو میگن چرا اینقدر تنها هستی؟ میگه آخه من با خودم حرف می‌زنم!",
+    "یه بار یه سگ رفت پیش گربه، گفت بیا با هم بریم ماهیگیری، گربه گفت من که ماهی نمی‌خورم!",
+    "به یارو میگن تو رانندگی بلدی؟ میگه آره، فقط ماشین رو نمی‌تونم کنترل کنم!",
+    "به یارو میگن چرا اینقدر ترسویی؟ میگه آخه من از سایه خودم می‌ترسم!",
+    "به یارو میگن تو انگلیسی بلدی؟ میگه آره، yes و no و maybe!",
+    "یه بار یه ماهی رفت پیش پرنده، گفت بیا با هم پرواز کنیم، پرنده گفت تو که بال نداری!",
+    "به یارو میگن چرا اینقدر خسیسی؟ میگه آخه پول رو باید نگه داشت!",
+    "به یارو میگن تو نقاشی بلدی؟ میگه آره، فقط نقاشی‌هام شبیه خط خطی هستن!",
+    "به یارو میگن چرا اینقدر ساکتی؟ میگه آخه دارم با خودم حرف می‌زنم!",
+    "یه بار یه فیل رفت پیش مورچه، گفت بیا با هم بازی کنیم، مورچه گفت من که نمی‌تونم تو رو ببینم!",
+    "به یارو میگن تو موسیقی بلدی؟ میگه آره، فقط آهنگ‌هام گوش‌خراشن!",
+    "به یارو میگن چرا اینقدر عجله داری؟ میگه آخه دیر شده!",
+    "به یارو میگن تو ریاضی بلدی؟ میگه آره، ۱+۱=۲، بقیه‌اش رو نمی‌دونم!",
+    "به یارو میگن چرا اینقدر می‌ترسی؟ میگه آخه من از همه چیز می‌ترسم، حتی از ترسیدن!",
+    "به یارو میگن تو برنامه‌نویسی بلدی؟ میگه آره، فقط کدهام کار نمی‌کنن!",
+    "به یارو میگن چرا اینقدر می‌خندی؟ میگه آخه به خودم فکر می‌کنم!",
+    "به یارو میگن تو شاعر هستی؟ میگه آره، فقط شعرهام قافیه ندارن!",
+]
+
 # ==================== لیست پیشوندهای دستورات ====================
-# این‌ها از فیلترها معاف هستند
 COMMAND_PREFIXES = [
     "start", "راهنما", "help", "ping", "پینگ", "time", "زمان",
     "شناسهمن", "شناسهاو", "شناسه", "id", "myid", "theirid",
@@ -362,13 +418,11 @@ COMMAND_PREFIXES = [
     "unlockbad", "فحشباز", "admins", "adminlist", "ادمینها", "لیستادمین",
     "admin", "ادمین", "demote", "برکنار", "clear", "پاک", "stats", "آمار",
     "چالش", "challenge", "جرئت", "dare", "truthordare", "بیو", "bio",
-    "جرئتحقیقت", "deeptruth", "بازی", "game", "games",
+    "جرئتحقیقت", "deeptruth", "بازی", "game", "games", "جوک", "joke",
 ]
 
 def normalize(cmd):
-    """نرمال‌سازی: حذف فاصله، یکسان‌سازی حروف فارسی/عربی"""
     c = cmd.replace(" ", "").replace("\u200c", "").replace("\u200f", "").replace("\u200e", "").strip().lower()
-    # یکسان‌سازی فارسی/عربی (که در کیبوردها فرق می‌کنن)
     c = c.replace("ي", "ی").replace("ك", "ک").replace("ة", "ه").replace("أ", "ا").replace("إ", "ا").replace("آ", "ا")
     return c
 
@@ -458,7 +512,12 @@ HELP = """📚 **راهنمای ربات**
 🔹 پاک <تعداد> — ۱ تا ۵۰۰
 
 🎮 **سرگرمی:**
-🔹 چالش / جرئت / بیو / جرئت حقیقت / بازی
+🔹 چالش — یک چالش تصادفی
+🔹 جرئت — یک جرئت یا حقیقت
+🔹 بیو — یک بیو تصادفی
+🔹 جرئت حقیقت — یک سوال عمیق
+🔹 جوک — یک جوک خنده‌دار
+🔹 بازی — لیست بازی‌ها
 
 ℹ️ **عمومی:**
 🔹 آمار / ping / time
@@ -471,6 +530,24 @@ class HC(BaseHTTPRequestHandler):
 
 def run_http():
     HTTPServer(("0.0.0.0", int(os.environ.get("PORT", 8080))), HC).serve_forever()
+
+def keep_alive():
+    """هر ۵ دقیقه به URL خود ربات یه درخواست HTTP می‌زنه تا Render بیدار بمونه"""
+    url = os.environ.get("RENDER_EXTERNAL_URL", "")
+    if not url:
+        port = os.environ.get("PORT", 8080)
+        url = f"http://localhost:{port}"
+
+    print(f"💓 Keep-alive فعال شد. URL: {url}")
+    time.sleep(30)
+
+    while True:
+        try:
+            r = requests.get(url, timeout=15)
+            print(f"💓 Ping {url} → {r.status_code}")
+        except Exception as e:
+            print(f"⚠️ Ping failed: {e}")
+        time.sleep(300)
 
 @bot.message_handler()
 def handle_all(message):
@@ -485,10 +562,8 @@ def handle_all(message):
 
         inc_count(ck, uid)
 
-        # ⭐ STEP 1: چک کنیم آیا این پیام یک دستور است یا نه
         is_cmd = is_command_text(ncmd)
 
-        # ⭐ STEP 2: فیلترها فقط برای پیام‌های غیردستوری و غیرادمین
         if is_group(ck) and not is_cmd and not is_owner_or_admin(ck, uid):
             f = data.get("filters", {}).get(ck, {})
             if f.get("link") and LINK_PATTERN.search(cmd):
@@ -502,7 +577,6 @@ def handle_all(message):
             if is_silenced(ck, uid):
                 bot.delete_message(message.chat_id, message.message_id); return
 
-        # ============ دستور مالک ============
         if ncmd in ("مالک", "owner"):
             owner = data.get("owners", {}).get(ck)
             if owner:
@@ -511,7 +585,6 @@ def handle_all(message):
                 bot.reply_to(message, "ℹ️ هنوز مالکی تنظیم نشده.")
             return
 
-        # ============ راهنما / start ============
         if ncmd in ("start", "راهنما", "help"):
             if is_group(ck) and not data.get("owners", {}).get(ck):
                 data.setdefault("owners", {})[ck] = uid
@@ -520,7 +593,6 @@ def handle_all(message):
             bot.reply_to(message, HELP)
             return
 
-        # ============ پینگ ============
         if ncmd in ("ping", "پینگ"):
             start = time.time()
             bot.reply_to(message, "🏓 ...")
@@ -532,7 +604,6 @@ def handle_all(message):
             bot.reply_to(message, f"🕐 {datetime.now():%Y/%m/%d - %H:%M:%S}")
             return
 
-        # ============ شناسه ============
         if ncmd in ("شناسهمن", "myid"):
             bot.reply_to(message, f"🆔 شناسه شما: `{uid}`")
             return
@@ -551,7 +622,6 @@ def handle_all(message):
             bot.reply_to(message, f"🆔 شناسه شما: `{uid}`")
             return
 
-        # ============ حذف ============
         if ncmd in ("delete", "حذف"):
             if not message.reply_to_message_id:
                 bot.reply_to(message, "❌ روی یک پیام ریپلای کن."); return
@@ -562,7 +632,6 @@ def handle_all(message):
                 bot.reply_to(message, f"❌ {e}")
             return
 
-        # ============ بن ============
         if ncmd.startswith("ban") or ncmd.startswith("بن"):
             t = get_target(cmd, message)
             if not t:
@@ -617,7 +686,6 @@ def handle_all(message):
             else: bot.reply_to(message, "ℹ️ اخطاری نداشت.")
             return
 
-        # ============ قوانین ============
         if ncmd in ("rules", "قوانین"):
             r = data["rules"].get(ck)
             bot.reply_to(message, f"📜 {r}" if r else "📜 تنظیم نشده.")
@@ -628,7 +696,6 @@ def handle_all(message):
             data["rules"][ck] = r; save_data(data); bot.reply_to(message, "✅ تنظیم شد.")
             return
 
-        # ============ خوش آمد ============
         if ncmd.startswith("setwelcome") or ncmd.startswith("تنظیمپیامخوشآمدی"):
             w = cmd.replace("setwelcome", "").replace("تنظیم پیام خوش آمدی", "").strip()
             if not w: bot.reply_to(message, "❌ متن بده."); return
@@ -639,7 +706,6 @@ def handle_all(message):
             else: bot.reply_to(message, "ℹ️ تنظیم نشده بود.")
             return
 
-        # ============ قفل گروه ============
         if ncmd in ("lock", "قفلکردنگروه", "قفل"):
             if ck not in data["locked"]: data["locked"].append(ck); save_data(data)
             bot.reply_to(message, "🔒 قفل شد. (ادمین‌ها و مالک معاف هستند)")
@@ -649,7 +715,6 @@ def handle_all(message):
             bot.reply_to(message, "🔓 باز شد.")
             return
 
-        # ============ سکوت ============
         if ncmd.startswith("unsilence") or ncmd.startswith("حذفسکوت"):
             t = get_target(cmd, message)
             if not t: bot.reply_to(message, "❌ ریپلای کن یا بنویس: حذف سکوت u0..."); return
@@ -667,7 +732,6 @@ def handle_all(message):
             bot.reply_to(message, f"🤐 {t} سکوت شد.")
             return
 
-        # ============ فیلترها ============
         if ncmd in ("locklink", "لینکقفل"):
             data.setdefault("filters", {}).setdefault(ck, {})["link"] = True; save_data(data); bot.reply_to(message, "🔗 فیلتر لینک فعال شد."); return
         if ncmd in ("unlocklink", "لینکباز"):
@@ -681,7 +745,6 @@ def handle_all(message):
         if ncmd in ("unlockbad", "فحشباز"):
             data.setdefault("filters", {}).setdefault(ck, {})["bad"] = False; save_data(data); bot.reply_to(message, "🔓 فیلتر فحش غیرفعال شد."); return
 
-        # ⭐⭐⭐ لیست ادمین — چک قبل از ادمین (افزودن) ⭐⭐⭐
         if ncmd in ("admins", "adminlist") or "لیستادمین" in ncmd or (ncmd.startswith("ادمین") and ncmd.endswith("ها")) or ncmd == "ادمینها":
             a = data.get("admins", {}).get(ck, [])
             o = data.get("owners", {}).get(ck, "—")
@@ -690,7 +753,6 @@ def handle_all(message):
             bot.reply_to(message, msg)
             return
 
-        # ============ ادمین (افزودن) ============
         if ncmd.startswith("admin") or ncmd.startswith("ادمین"):
             if not is_group(ck):
                 bot.reply_to(message, "❌ این دستور فقط در گروه کار می‌کند."); return
@@ -714,7 +776,6 @@ def handle_all(message):
             else: bot.reply_to(message, "ℹ️ ادمین نبود.")
             return
 
-        # ============ پاک ============
         if ncmd.startswith("clear") or ncmd.startswith("پاک"):
             p = cmd.replace("clear", "").replace("پاک", "").strip().split()
             if not p or not p[0].isdigit():
@@ -731,7 +792,6 @@ def handle_all(message):
             bot.reply_to(message, f"🧹 {d} پیام پاک شد.")
             return
 
-        # ============ آمار ============
         if ncmd in ("stats", "آمار"):
             w = data["warns"].get(ck, {}); b = data["banned"].get(ck, []); mc = data.get("msg_count", {}).get(ck, {})
             top = sorted(mc.items(), key=lambda x: -x[1])[:10]
@@ -758,12 +818,16 @@ def handle_all(message):
             bot.reply_to(message, f"✨ **بیو:**\n\n{random.choice(BIOS)}"); return
         if ncmd in ("جرئتحقیقت", "deeptruth"):
             bot.reply_to(message, f"💭 **جرئت حقیقت (عمیق):**\n\n{random.choice(DEEP_TRUTH_OR_DARE)}"); return
+        if ncmd in ("جوک", "joke"):
+            bot.reply_to(message, f"😂 **جوک:**\n\n{random.choice(JOKES)}"); return
         if ncmd in ("بازی", "game", "games"):
             bot.reply_to(message,
                 "🎮 **بازی‌های گروهی:**\n\n"
                 "1. حدس کلمه\n2. بیست سوالی\n3. اسم فامیل\n"
                 "4. جرئت یا حقیقت (دستور «جرئت»)\n5. چالش (دستور «چالش»)\n"
-                "6. داستان‌سازی\n7. پانتومیم\n8. حدس آهنگ"
+                "6. داستان‌سازی\n7. پانتومیم\n8. حدس آهنگ\n\n"
+                "🎯 **بازی‌های آنلاین:**\n"
+                "برو به https://me-chat-1w2h.onrender.com/games.html"
             ); return
 
     except Exception as e:
@@ -771,5 +835,7 @@ def handle_all(message):
 
 if __name__ == "__main__":
     threading.Thread(target=run_http, daemon=True).start()
+    threading.Thread(target=keep_alive, daemon=True).start()
     print("✅ ربات فعال شد!")
+    print("📋 دستورات: حذف، بن، اخراج، اخطار، شناسه، قوانین، خوش‌آمد، قفل، سکوت، ادمین، پاک، آمار، چالش، جرئت، بیو، جرئت حقیقت، جوک، بازی")
     bot.polling()
