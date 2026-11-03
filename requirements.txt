@@ -1,2 +1,2 @@
-PyRubikaBotAPI
-aiohttp
+rubika-bot-api
+requests
