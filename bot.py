@@ -442,4 +442,4 @@ if __name__ == "__main__":
     threading.Thread(target=keep_alive, daemon=True).start()
     print("✅ ربات فعال شد!")
     print("📋 دستورات: حذف، بن، اخراج، اخطار، شناسه، قوانین، خوش‌آمد، قفل، سکوت، ادمین، پاک، آمار، چالش، جرئت، بیو، جرئت حقیقت، جوک، بازی")
-    bot.run()
+    asyncio.run(bot.run())
